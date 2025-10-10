@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="NuklearOG"
+	Name="Nuklear-XboxOG"
 	ProjectGUID="{5837B221-F405-4877-88B8-E6A5A594E59E}"
 	Keyword="XboxProj">
 	<Platforms>
@@ -25,7 +25,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -73,7 +73,7 @@
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -124,7 +124,7 @@
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -176,7 +176,7 @@
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -226,7 +226,7 @@
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -270,7 +270,13 @@
 				RelativePath=".\graphics.cpp">
 			</File>
 			<File
-				RelativePath=".\NuklearOG.cpp">
+				RelativePath=".\input_manager.cpp">
+			</File>
+			<File
+				RelativePath=".\main.cpp">
+			</File>
+			<File
+				RelativePath=".\nk_render.cpp">
 			</File>
 			<File
 				RelativePath=".\stdafx.cpp">
@@ -315,6 +321,12 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath=".\graphics.h">
+			</File>
+			<File
+				RelativePath=".\input_manager.h">
+			</File>
+			<File
+				RelativePath=".\nk_render.h">
 			</File>
 			<File
 				RelativePath=".\nuklear.h">
