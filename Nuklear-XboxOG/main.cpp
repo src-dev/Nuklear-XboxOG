@@ -9,7 +9,8 @@
 static void
 pump_input(struct nk_context *context)
 {
-    input_manager::process();
+    input_manager::process_mouse();
+    input_manager::process_keyboard();
 
     nk_input_begin(context);
 
@@ -95,6 +96,7 @@ canvas_end(struct nk_context *ctx, struct nk_canvas *canvas)
 void __cdecl main()
 {
     nk_render::init();
+    input_manager::init();
 
     int width = graphics::getWidth();
     int height = graphics::getHeight();

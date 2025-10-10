@@ -25,14 +25,32 @@ typedef enum MOUSE_BUTTON
     MOUSE_LEFT_BUTTON = 0, 
     MOUSE_RIGHT_BUTTON = 1, 
     MOUSE_MIDDLE_BUTTON = 2, 
-    MOUSE_EXTRA_BUTTON1 = 4, 
-    MOUSE_EXTRA_BUTTON2 = 8 
+    MOUSE_EXTRA_BUTTON1 = 3, 
+    MOUSE_EXTRA_BUTTON2 = 4 
 } MOUSE_BUTTON;
+
+typedef  struct KeyboardState
+{
+  bool key_down;
+  char ascii;
+  char virtual_key;
+  bool button[3];
+} KeyboardState;
+
+typedef enum KEYBOARD_BUTTON 
+{ 
+    KEYBOARD_SHIFT_BUTTON = 0, 
+    KEYBOARD_CTRL_BUTTON = 1, 
+    KEYBOARD_ALT_BUTTON = 2 
+} KEYBOARD_BUTTON;
 
 class input_manager
 {
 public:
-    static void process();
+    static void init();
+    static void process_mouse();
+    static void process_keyboard();
     static bool mouse_pressed(MOUSE_BUTTON button, int port);
     static bool try_get_mouse_state(int port, MouseState* mouseState);
+    static bool try_get_keyboard_state(int port, KeyboardState* keyboardState);
 };
