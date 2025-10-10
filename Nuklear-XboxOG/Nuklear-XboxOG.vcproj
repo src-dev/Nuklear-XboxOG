@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="_DEBUG;_XBOX"
+				PreprocessorDefinitions="_DEBUG;_XBOX;DEBUG_MOUSE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -67,7 +67,7 @@
 				Optimization="3"
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE"
+				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;DEBUG_MOUSE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -118,7 +118,7 @@
 				Optimization="3"
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;FASTCAP"
+				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;FASTCAP;DEBUG_MOUSE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -170,7 +170,7 @@
 				Optimization="3"
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX"
+				PreprocessorDefinitions="NDEBUG;_XBOX;DEBUG_MOUSE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -220,7 +220,7 @@
 				Optimization="3"
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX;LTCG"
+				PreprocessorDefinitions="NDEBUG;_XBOX;LTCG;DEBUG_MOUSE"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -267,6 +267,9 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath=".\debug.cpp">
+			</File>
+			<File
 				RelativePath=".\graphics.cpp">
 			</File>
 			<File
@@ -274,6 +277,9 @@
 			</File>
 			<File
 				RelativePath=".\main.cpp">
+			</File>
+			<File
+				RelativePath=".\math.cpp">
 			</File>
 			<File
 				RelativePath=".\nk_render.cpp">
@@ -320,10 +326,16 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
+				RelativePath=".\debug.h">
+			</File>
+			<File
 				RelativePath=".\graphics.h">
 			</File>
 			<File
 				RelativePath=".\input_manager.h">
+			</File>
+			<File
+				RelativePath=".\math.h">
 			</File>
 			<File
 				RelativePath=".\nk_render.h">

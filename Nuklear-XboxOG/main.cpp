@@ -4,18 +4,17 @@
 #include "stdafx.h"
 #include "graphics.h"
 #include "nk_render.h"
-
-
-
+#include "input_manager.h"
 
 static void
-pump_input(struct nk_context *ctx /*GLFWwindow *win*/)
+pump_input(struct nk_context *context)
 {
-    /*double x, y;
-    nk_input_begin(ctx);
-    glfwPollEvents();
+    input_manager::process();
 
-    nk_input_key(ctx, NK_KEY_DEL, glfwGetKey(win, GLFW_KEY_DELETE) == GLFW_PRESS);
+    nk_input_begin(context);
+
+
+    /*nk_input_key(ctx, NK_KEY_DEL, glfwGetKey(win, GLFW_KEY_DELETE) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_ENTER, glfwGetKey(win, GLFW_KEY_ENTER) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_TAB, glfwGetKey(win, GLFW_KEY_TAB) == GLFW_PRESS);
     nk_input_key(ctx, NK_KEY_BACKSPACE, glfwGetKey(win, GLFW_KEY_BACKSPACE) == GLFW_PRESS);
@@ -36,14 +35,18 @@ pump_input(struct nk_context *ctx /*GLFWwindow *win*/)
         nk_input_key(ctx, NK_KEY_PASTE, 0);
         nk_input_key(ctx, NK_KEY_CUT, 0);
         nk_input_key(ctx, NK_KEY_SHIFT, 0);
-    }
+    }*/
 
-    glfwGetCursorPos(win, &x, &y);
-    nk_input_motion(ctx, (int)x, (int)y);
-    nk_input_button(ctx, NK_BUTTON_LEFT, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
-    nk_input_button(ctx, NK_BUTTON_MIDDLE, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS);
-    nk_input_button(ctx, NK_BUTTON_RIGHT, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
-    nk_input_end(ctx);*/
+    MouseState mouseState;
+    memset(&mouseState, 0, sizeof(mouseState));
+    if (input_manager::try_get_mouse_state(-1, &mouseState))
+    {
+        nk_input_motion(context, mouseState.x, mouseState.y);
+        nk_input_button(context, NK_BUTTON_LEFT, mouseState.x, mouseState.y, mouseState.button[MOUSE_LEFT_BUTTON]);
+        nk_input_button(context, NK_BUTTON_MIDDLE, mouseState.x, mouseState.y, mouseState.button[MOUSE_MIDDLE_BUTTON]);
+        nk_input_button(context, NK_BUTTON_RIGHT, mouseState.x, mouseState.y, mouseState.button[MOUSE_RIGHT_BUTTON]);
+    }
+    nk_input_end(context);
 }
 
 struct nk_canvas {
@@ -93,7 +96,6 @@ void __cdecl main()
 {
     nk_render::init();
 
-
     int width = graphics::getWidth();
     int height = graphics::getHeight();
 
@@ -102,12 +104,14 @@ void __cdecl main()
 
     while (true)
     {
-        pump_input(context/*, win*/);
+        pump_input(context);
 
         /* draw */
         nk_canvas canvas;
         canvas_begin(context, &canvas, 0, 0, 0, width, height, nk_rgb(250,250,250));
         {
+   
+
             nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
             nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
             nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
@@ -130,6 +134,14 @@ void __cdecl main()
             nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
+
+            // quick n dirty mouse pointer
+            MouseState mouseState;
+            memset(&mouseState, 0, sizeof(mouseState));
+            if (input_manager::try_get_mouse_state(-1, &mouseState))
+            {
+                nk_fill_rect(canvas.painter, nk_rect(mouseState.x,mouseState.y,10,10), 5, nk_rgb(255, 0, 255));
+            }
         }
         canvas_end(context, &canvas);
 
