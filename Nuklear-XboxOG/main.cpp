@@ -18,12 +18,10 @@ void __cdecl main()
 
         canvas::render();
         controls::render();
-
-        MouseState mouseState;
-        memset(&mouseState, 0, sizeof(mouseState));
-        if (input_manager::try_get_mouse_state(-1, &mouseState))
+;
+        if (input_manager::has_mouse(-1))
         {
-            renderer::mouse_pointer(mouseState.x, mouseState.y);
+            renderer::mouse_pointer();
         }
 
         renderer::render(0xff333333);

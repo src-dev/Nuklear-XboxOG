@@ -128,27 +128,29 @@ nk_font* renderer::get_font()
     return _font;
 }
 
-void renderer::mouse_pointer(int x, int y)
+void renderer::mouse_pointer()
 {
     if (nk_begin(&_context, "#overlay", nk_rect(0, 0, graphics::getWidth(), graphics::getHeight()), NK_WINDOW_NO_INPUT | NK_WINDOW_NO_SCROLLBAR))
     {
         _context.style.window.fixed_background = nk_style_item_color(nk_rgba(0,0,0,0));
 
+        struct nk_vec2 pos = _context.input.mouse.pos;
+
         float points[14];
-        points[0] = (float)x;      
-        points[1] = (float)y;
-        points[2] = x + 6.0f;  
-        points[3] = y;
-        points[4] = x + 4.0f;  
-        points[5] = y + 2;
-        points[6] = x + 7.0f;  
-        points[7] = y + 5.0f;
-        points[8] = x + 5.0f;  
-        points[9] = y + 7.0f;
-        points[10] = x + 2.0f;  
-        points[11] = y + 4.0f;
-        points[12] = x;  
-        points[13] = y + 6.0f;
+        points[0] = (float)pos.x;      
+        points[1] = (float)pos.y;
+        points[2] = pos.x + 6.0f;  
+        points[3] = pos.y;
+        points[4] = pos.x + 4.0f;  
+        points[5] = pos.y + 2;
+        points[6] = pos.x + 7.0f;  
+        points[7] = pos.y + 5.0f;
+        points[8] = pos.x + 5.0f;  
+        points[9] = pos.y + 7.0f;
+        points[10] = pos.x + 2.0f;  
+        points[11] = pos.y + 4.0f;
+        points[12] = pos.x;  
+        points[13] = pos.y + 6.0f;
         nk_command_buffer* command_buffer = nk_window_get_canvas(&_context);
         nk_fill_polygon(command_buffer, points, 5, nk_rgb(255, 255, 255));
         nk_stroke_polygon(command_buffer, points, 7, 1.0f, nk_rgb(0, 0, 0)); 
