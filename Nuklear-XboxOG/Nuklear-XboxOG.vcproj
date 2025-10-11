@@ -306,47 +306,23 @@
 				RelativePath=".\stb_image.h">
 			</File>
 			<File
-				RelativePath=".\stdafx.cpp">
-				<FileConfiguration
-					Name="Debug|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile_FastCap|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release_LTCG|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\stdafx.h">
-			</File>
-			<File
 				RelativePath=".\stdint.h">
 			</File>
 			<Filter
 				Name="Demos"
 				Filter="">
+				<File
+					RelativePath=".\Demos\canvas.cpp">
+				</File>
+				<File
+					RelativePath=".\Demos\canvas.h">
+				</File>
+				<File
+					RelativePath=".\Demos\controls.cpp">
+				</File>
+				<File
+					RelativePath=".\Demos\controls.h">
+				</File>
 			</Filter>
 		</Filter>
 	</Files>

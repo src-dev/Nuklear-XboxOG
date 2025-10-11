@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "graphics.h"
+#include "debug.h"
 
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -91,18 +92,19 @@ void renderer::render(uint32_t background_color)
     
         const struct nk_rect null_rect = nk_get_null_rect();
         bool isNullRect = memcmp(&null_rect, &command->clip_rect, sizeof(struct nk_rect)) == 0;
-        if (isNullRect)
+
+        if (!isNullRect)
         {
-            D3DVIEWPORT8 vp = { 0, 0, graphics::getWidth(), graphics::getHeight(), 0.0f, 1.0f };
-            graphics::getDevice()->SetViewport(&vp);
-        }
-        else
-        {
-            D3DVIEWPORT8 vp = { (DWORD)command->clip_rect.x, (DWORD)command->clip_rect.y, (DWORD)command->clip_rect.w, (DWORD)command->clip_rect.h, 0.0f, 1.0f };
-            graphics::getDevice()->SetViewport(&vp);
+            graphics::begin_stencil(command->clip_rect.x, command->clip_rect.y, command->clip_rect.w, command->clip_rect.h);
         }
 
         graphics::getDevice()->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertex_count, command->elem_count/3, offset, D3DFMT_INDEX16, nk_buffer_memory_const(&vertex_buffer), sizeof(nk_vertex));
+        
+        if (!isNullRect)
+        {
+            graphics::end_stencil();
+        }
+
         offset += command->elem_count;
     }
 

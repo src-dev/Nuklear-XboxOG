@@ -10,13 +10,12 @@ static LPDIRECT3DDEVICE8 mD3dDevice;
 
 DISPLAY_MODE displayModes[] =
 {
-    //{   720,    480,    TRUE,   TRUE,  60 },         // 720x480 progressive 16x9
-    //{   720,    480,    TRUE,   FALSE, 60 },         // 720x480 progressive 4x3
-    //{   720,    480,    FALSE,  TRUE,  50 },         // 720x480 interlaced 16x9 50Hz
-    //{   720,    480,    FALSE,  FALSE, 50 },         // 720x480 interlaced 4x3  50Hz
-    //{   720,    480,    FALSE,  TRUE,  60 },         // 720x480 interlaced 16x9
-    //{   720,    480,    FALSE,  FALSE, 60 },         // 720x480 interlaced 4x3
-
+    {   720,    480,    TRUE,   TRUE,  60 },         // 720x480 progressive 16x9
+    {   720,    480,    TRUE,   FALSE, 60 },         // 720x480 progressive 4x3
+    {   720,    480,    FALSE,  TRUE,  50 },         // 720x480 interlaced 16x9 50Hz
+    {   720,    480,    FALSE,  FALSE, 50 },         // 720x480 interlaced 4x3  50Hz
+    {   720,    480,    FALSE,  TRUE,  60 },         // 720x480 interlaced 16x9
+    {   720,    480,    FALSE,  FALSE, 60 },         // 720x480 interlaced 4x3
 
 	// Width  Height Progressive Widescreen
 
@@ -30,7 +29,7 @@ DISPLAY_MODE displayModes[] =
     {   640,    480,    TRUE,   FALSE, 60 },         // 640x480 progressive 4x3
 
 	// HDTV Interlaced Modes
-	//    {  1920,   1080,    FALSE,  TRUE,  60 },         // 1920x1080 interlaced 16x9
+	{  1920,   1080,    FALSE,  TRUE,  60 },         // 1920x1080 interlaced 16x9
 
 	// SDTV PAL-50 Interlaced Modes
     {   720,    480,    FALSE,  TRUE,  50 },         // 720x480 interlaced 16x9 50Hz
@@ -119,8 +118,6 @@ bool graphics::createDevice()
 	}
     mD3dDevice = d3dDevice;
 
-D3DXMATRIX matProjection;
-
     const float L = 0.5f;
     const float R = (float)mWidth + 0.5f;
     const float T = 0.5f;
@@ -135,6 +132,8 @@ D3DXMATRIX matProjection;
     matrix[1][1] = 2.0f / (T - B);
     matrix[3][0] = (R + L) / (L - R);
     matrix[3][1] = (T + B) / (B - T);
+    
+    D3DXMATRIX matProjection;
     memcpy(matProjection, matrix, sizeof(matrix));
 
 	//D3DXMatrixOrthoOffCenterRH(&matrix, 0, (float)mWidth, 0, (float)mHeight, 1.0f, 100.0f);
@@ -148,38 +147,9 @@ D3DXMATRIX matProjection;
 	D3DXMatrixIdentity(&matWorld);
 	mD3dDevice->SetTransform( D3DTS_WORLD, &matWorld);
 
- //   mD3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
- //   mD3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-	//mD3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	//mD3dDevice->SetVertexShader(D3DFVF_CUSTOMVERTEX);
-	//mD3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//mD3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//mD3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	//mD3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU,  D3DTADDRESS_CLAMP);
- //   mD3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV,  D3DTADDRESS_CLAMP);
-
-	//mD3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
-	//mD3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
-	//mD3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_LINEAR);
-
-	//mD3dDevice->BeginScene();
-	//mD3dDevice->Clear(0L, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0xff000000, 1.0f, 0L);
-	//mD3dDevice->EndScene();
-	//mD3dDevice->Present(NULL, NULL, NULL, NULL);
-graphics::getDevice()->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
+    mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
 
     /* blend state */
-    
-    
     mD3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     mD3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
     mD3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -208,11 +178,43 @@ graphics::getDevice()->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1
 	return true;
 }
 
+void graphics::begin_stencil(float x, float y, float w, float h)
+{
+    mD3dDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+    mD3dDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+    mD3dDevice->SetRenderState(D3DRS_STENCILREF, 1);
+    mD3dDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
+    mD3dDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
+    mD3dDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
+    mD3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
+
+    struct Vertex { float x,y,z,rhw; };
+    Vertex quad[4] = {
+        { (float)x, (float)y, 0.0f, 1.0f },
+        { (float)(x+w), (float)y, 0.0f, 1.0f },
+        { (float)x, (float)(y+h), 0.0f, 1.0f },
+        { (float)(x+w), (float)(y+h), 0.0f, 1.0f },
+    };
+
+    mD3dDevice->SetVertexShader(D3DFVF_XYZRHW);
+    mD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(Vertex));
+    mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
+
+    mD3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+    mD3dDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
+    mD3dDevice->SetRenderState(D3DRS_STENCILREF, 1);
+    mD3dDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+}
+
+void graphics::end_stencil()
+{
+    mD3dDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+}
+
 LPDIRECT3DDEVICE8 graphics::getDevice()
 {
     return mD3dDevice;
 }
-
 
 void graphics::swizzle(const void *src, const uint32_t& depth, const uint32_t& width, const uint32_t& height, void *dest)
 {
