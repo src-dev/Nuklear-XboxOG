@@ -82,12 +82,15 @@ void __cdecl main()
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
-            // quick n dirty mouse pointer
-            MouseState mouseState;
-            memset(&mouseState, 0, sizeof(mouseState));
-            if (input_manager::try_get_mouse_state(-1, &mouseState))
+            if (input_manager::has_mouse(-1))
             {
-                nk_fill_rect(canvas.painter, nk_rect(mouseState.x - 5, mouseState.y  - 5, 10,10), 5, nk_rgb(255, 0, 255));
+                // quick n dirty mouse pointer
+                MouseState mouseState;
+                memset(&mouseState, 0, sizeof(mouseState));
+                if (input_manager::try_get_mouse_state(-1, &mouseState))
+                {
+                    nk_fill_rect(canvas.painter, nk_rect(mouseState.x - 5, mouseState.y  - 5, 10,10), 5, nk_rgb(255, 0, 255));
+                }
             }
         }
         canvas_end(context, &canvas);
