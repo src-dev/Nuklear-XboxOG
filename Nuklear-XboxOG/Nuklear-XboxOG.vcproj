@@ -270,10 +270,19 @@
 				RelativePath=".\debug.cpp">
 			</File>
 			<File
+				RelativePath=".\debug.h">
+			</File>
+			<File
 				RelativePath=".\graphics.cpp">
 			</File>
 			<File
+				RelativePath=".\graphics.h">
+			</File>
+			<File
 				RelativePath=".\input_manager.cpp">
+			</File>
+			<File
+				RelativePath=".\input_manager.h">
 			</File>
 			<File
 				RelativePath=".\main.cpp">
@@ -282,7 +291,19 @@
 				RelativePath=".\math.cpp">
 			</File>
 			<File
+				RelativePath=".\math.h">
+			</File>
+			<File
+				RelativePath=".\nuklear.h">
+			</File>
+			<File
 				RelativePath=".\renderer.cpp">
+			</File>
+			<File
+				RelativePath=".\renderer.h">
+			</File>
+			<File
+				RelativePath=".\stb_image.h">
 			</File>
 			<File
 				RelativePath=".\stdafx.cpp">
@@ -318,37 +339,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\stdint.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
-			<File
-				RelativePath=".\debug.h">
-			</File>
-			<File
-				RelativePath=".\graphics.h">
-			</File>
-			<File
-				RelativePath=".\input_manager.h">
-			</File>
-			<File
-				RelativePath=".\math.h">
-			</File>
-			<File
-				RelativePath=".\nuklear.h">
-			</File>
-			<File
-				RelativePath=".\renderer.h">
-			</File>
-			<File
-				RelativePath=".\stb_image.h">
-			</File>
-			<File
 				RelativePath=".\stdafx.h">
 			</File>
+			<File
+				RelativePath=".\stdint.h">
+			</File>
+			<Filter
+				Name="Demos"
+				Filter="">
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

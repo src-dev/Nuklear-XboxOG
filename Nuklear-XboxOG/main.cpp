@@ -61,21 +61,18 @@ void __cdecl main()
         nk_stroke_circle(painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
         nk_stroke_triangle(painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
-        if (input_manager::has_mouse(-1))
-        {
-            MouseState mouseState;
-            memset(&mouseState, 0, sizeof(mouseState));
-            if (input_manager::try_get_mouse_state(-1, &mouseState))
-            {
-                renderer::mouse_pointer(mouseState.x, mouseState.y);
-            }
-        }
-
-        nk_end(context);
-
         context->style.window.spacing = panel_padding;
         context->style.window.padding = item_spacing;
         context->style.window.fixed_background = window_background;
+
+        nk_end(context);
+
+        MouseState mouseState;
+        memset(&mouseState, 0, sizeof(mouseState));
+        if (input_manager::try_get_mouse_state(-1, &mouseState))
+        {
+            renderer::mouse_pointer(mouseState.x, mouseState.y);
+        }
 
         renderer::render(0xff333333);
     }

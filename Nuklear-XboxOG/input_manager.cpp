@@ -136,19 +136,6 @@ void input_manager::process_keyboard()
     }
 }
 
-bool input_manager::has_mouse(int port)
-{
-	for (int i = 0; i < XGetPortCount(); i++)
-	{
-		if (port >= 0 && port != i || mMouseHandles[i] == NULL)
-		{
-			continue;
-		}
-        return true;
-    }
-    return false;
-}
-
 bool input_manager::mouse_pressed(MOUSE_BUTTON button, int port)
 {
 	for (int i = 0; i < XGetPortCount(); i++)
