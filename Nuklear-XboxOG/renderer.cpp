@@ -128,18 +128,22 @@ nk_font* renderer::get_font()
 
 void renderer::mouse_pointer(int x, int y)
 {
-    float points[10];
+    float points[14];
     points[0] = (float)x;      
     points[1] = (float)y;
     points[2] = x + 6.0f;  
-    points[3] = y + 10.0f;
+    points[3] = y;
     points[4] = x + 4.0f;  
-    points[5] = y + 10.0f;
-    points[6] = x + 4.0f;  
-    points[7] = y + 14.0f;
-    points[8] = x + 2.0f;  
-    points[9] = y + 14.0f;
+    points[5] = y + 2;
+    points[6] = x + 7.0f;  
+    points[7] = y + 5.0f;
+    points[8] = x + 5.0f;  
+    points[9] = y + 7.0f;
+    points[10] = x + 2.0f;  
+    points[11] = y + 4.0f;
+    points[12] = x;  
+    points[13] = y + 6.0f;
     nk_command_buffer* command_buffer = nk_window_get_canvas(&_context);
     nk_fill_polygon(command_buffer, points, 5, nk_rgb(255, 255, 255));
-    nk_stroke_polygon(command_buffer, points, 5, 1.0f, nk_rgb(0, 0, 0)); 
+    nk_stroke_polygon(command_buffer, points, 7, 1.0f, nk_rgb(0, 0, 0)); 
 }
