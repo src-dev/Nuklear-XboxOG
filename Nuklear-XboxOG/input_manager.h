@@ -34,14 +34,17 @@ typedef  struct KeyboardState
   bool key_down;
   char ascii;
   char virtual_key;
-  bool button[3];
+  bool button[6];
 } KeyboardState;
 
 typedef enum KEYBOARD_BUTTON 
 { 
-    KEYBOARD_SHIFT_BUTTON = 0, 
-    KEYBOARD_CTRL_BUTTON = 1, 
-    KEYBOARD_ALT_BUTTON = 2 
+    KEYBOARD_CTRL_BUTTON = 0,
+    KEYBOARD_SHIFT_BUTTON = 0,  
+    KEYBOARD_ALT_BUTTON = 2,
+    KEYBOARD_CAPSLOCK_BUTTON = 3,
+    KEYBOARD_NUMLOCK_BUTTON = 4,
+    KEYBOARD_SCROLLLOCK_BUTTON = 5
 } KEYBOARD_BUTTON;
 
 class input_manager

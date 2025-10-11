@@ -27,6 +27,8 @@ void input_manager::init()
     memset(mMouseStatesPrevious, 0, sizeof(mMouseStatesPrevious));
 
     memset(mKeyboardHandles, 0, sizeof(mKeyboardHandles));
+    //mKeyboardPressedCurrent = false;
+    //mKeyboardPressedPrevious = false;
     memset(&mKeyboardState, 0, sizeof(mKeyboardState));
 
     XINPUT_DEBUG_KEYQUEUE_PARAMETERS keyboardSettings;
@@ -102,7 +104,6 @@ void input_manager::process_keyboard()
                 pollValues.ReservedMBZ1 = 0;
                 pollValues.ReservedMBZ2 = 0;
 				mKeyboardHandles[i] = XInputOpen(XDEVICE_TYPE_DEBUG_KEYBOARD, i, XDEVICE_NO_SLOT, &pollValues);
-                mKeyboardState.key_down = false;
 			}
 			if ((removals & 1) == 1)
 			{
@@ -114,40 +115,26 @@ void input_manager::process_keyboard()
 		}
 	}
 
-    XINPUT_DEBUG_KEYSTROKE currentKeyStroke;
+    
+    mKeyboardState.key_down = false; 
     for (int i = 0; i < XGetPortCount(); i++)
 	{
         XINPUT_DEBUG_KEYSTROKE currentKeyStroke;
+        memset(&currentKeyStroke, 0, sizeof(currentKeyStroke));
 		if (mKeyboardHandles[i] == NULL || XInputDebugGetKeystroke(&currentKeyStroke) != 0)
         {
             continue;
         }
 
-        if (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_KEYUP == XINPUT_DEBUG_KEYSTROKE_FLAG_KEYUP)
-        {
-            mKeyboardState.key_down = false;
-        }
-        else if (currentKeyStroke.VirtualKey != 0 || currentKeyStroke.Ascii != 0) 
-        {
-            mKeyboardState.key_down = true;
-        }
-
-        if (mKeyboardState.key_down)
-        {
-            mKeyboardState.ascii = currentKeyStroke.Ascii;
-            mKeyboardState.virtual_key = currentKeyStroke.VirtualKey;
-            mKeyboardState.button[KEYBOARD_SHIFT_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_SHIFT) != 0;
-            mKeyboardState.button[KEYBOARD_CTRL_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_CTRL) != 0;
-            mKeyboardState.button[KEYBOARD_ALT_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_ALT) != 0;
-        }
-        else
-        {
-            mKeyboardState.ascii = 0;
-            mKeyboardState.virtual_key = 0;
-            mKeyboardState.button[KEYBOARD_SHIFT_BUTTON] = false;
-            mKeyboardState.button[KEYBOARD_CTRL_BUTTON] = false;
-            mKeyboardState.button[KEYBOARD_ALT_BUTTON] = false;
-        }
+        mKeyboardState.key_down = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_KEYUP) == 0 && currentKeyStroke.Ascii != 0 && currentKeyStroke.VirtualKey != 0;
+        mKeyboardState.ascii = currentKeyStroke.Ascii;
+        mKeyboardState.virtual_key = currentKeyStroke.VirtualKey;
+        mKeyboardState.button[KEYBOARD_CTRL_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_CTRL) != 0;          
+        mKeyboardState.button[KEYBOARD_SHIFT_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_SHIFT) != 0;
+        mKeyboardState.button[KEYBOARD_ALT_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_ALT) != 0;
+        mKeyboardState.button[KEYBOARD_CAPSLOCK_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_CAPSLOCK) != 0;
+        mKeyboardState.button[KEYBOARD_NUMLOCK_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_NUMLOCK) != 0;
+        mKeyboardState.button[KEYBOARD_SCROLLLOCK_BUTTON] = (currentKeyStroke.Flags & XINPUT_DEBUG_KEYSTROKE_FLAG_SCROLLLOCK) != 0;
     }
 }
 
