@@ -17,4 +17,5 @@ public:
     static void render(uint32_t background_color);
     static nk_context* get_context();
     static nk_font* get_font();
+    static void mouse_pointer(int x, int y);
 };

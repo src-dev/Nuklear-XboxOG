@@ -125,3 +125,21 @@ nk_font* renderer::get_font()
 {
     return _font;
 }
+
+void renderer::mouse_pointer(int x, int y)
+{
+    float points[10];
+    points[0] = x;      
+    points[1] = y;
+    points[2] = x + 6;  
+    points[3] = y + 10;
+    points[4] = x + 4;  
+    points[5] = y + 10;
+    points[6] = x + 4;  
+    points[7] = y + 14;
+    points[8] = x + 2;  
+    points[9] = y + 14;
+    nk_command_buffer* command_buffer = nk_window_get_canvas(&_context);
+    nk_fill_polygon(command_buffer, points, 5, nk_rgb(255, 255, 255));
+    nk_stroke_polygon(command_buffer, points, 5, 1.0f, nk_rgb(0, 0, 0)); 
+}

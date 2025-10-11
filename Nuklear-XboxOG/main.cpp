@@ -28,11 +28,11 @@ static void canvas_begin(nk_context *ctx, nk_canvas *canvas, nk_flags flags, int
     nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
 
     /* allocate the complete window space for drawing */
-    {struct nk_rect total_space;
+    struct nk_rect total_space;
     total_space = nk_window_get_content_region(ctx);
     nk_layout_row_dynamic(ctx, total_space.h, 1);
     nk_widget(&total_space, ctx);
-    canvas->painter = nk_window_get_canvas(ctx);}
+    canvas->painter = nk_window_get_canvas(ctx);
 }
 
 static void canvas_end(nk_context *ctx, nk_canvas *canvas)
@@ -81,20 +81,19 @@ void __cdecl main()
             nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
+        }
 
-            if (input_manager::has_mouse(-1))
+        if (input_manager::has_mouse(-1))
+        {
+            MouseState mouseState;
+            memset(&mouseState, 0, sizeof(mouseState));
+            if (input_manager::try_get_mouse_state(-1, &mouseState))
             {
-                // quick n dirty mouse pointer
-                MouseState mouseState;
-                memset(&mouseState, 0, sizeof(mouseState));
-                if (input_manager::try_get_mouse_state(-1, &mouseState))
-                {
-                    nk_fill_rect(canvas.painter, nk_rect(mouseState.x - 5, mouseState.y  - 5, 10,10), 5, nk_rgb(255, 0, 255));
-                }
+                renderer::mouse_pointer(mouseState.x, mouseState.y);
             }
         }
-        canvas_end(context, &canvas);
 
+        canvas_end(context, &canvas);
         renderer::render(0xff333333);
     }
 }
