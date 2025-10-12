@@ -12,7 +12,7 @@
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
 
-#define MAX_INDICES_PER_BATCH 32766
+#define MAX_INDICES_PER_BATCH 16383
 
 typedef struct nk_vertex 
 {
