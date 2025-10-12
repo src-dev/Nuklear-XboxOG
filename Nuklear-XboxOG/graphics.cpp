@@ -136,7 +136,6 @@ bool graphics::createDevice()
     D3DXMATRIX matProjection;
     memcpy(matProjection, matrix, sizeof(matrix));
 
-	//D3DXMatrixOrthoOffCenterRH(&matrix, 0, (float)mWidth, 0, (float)mHeight, 1.0f, 100.0f);
     mD3dDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 
 	D3DXMATRIX  matView;
@@ -196,6 +195,7 @@ void graphics::begin_stencil(float x, float y, float w, float h)
         { (float)(x+w), (float)(y+h), 0.0f, 1.0f },
     };
 
+    mD3dDevice->Clear(0L, NULL, D3DCLEAR_STENCIL, 0, 1.0f, 0L);
     mD3dDevice->SetVertexShader(D3DFVF_XYZRHW);
     mD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(Vertex));
     mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);

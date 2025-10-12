@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "debug.h"
 
+#define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
@@ -23,6 +24,7 @@ nk_font* _font;
 
 nk_convert_config _config;
 D3DTexture* _font_texture;
+D3DTexture* _mouse_texture;
 
 bool renderer::init()
 {
@@ -62,6 +64,19 @@ bool renderer::init()
     _config.shape_AA = NK_ANTI_ALIASING_ON;
     _config.line_AA = NK_ANTI_ALIASING_ON;
 
+    uint8_t mouse_pointer[256] = {
+        000,000,000,255, 000,000,000,255, 000,000,000,255, 000,000,000,255, 000,000,000,255, 000,000,000,255, 000,000,000,255, 000,000,000,000,
+        000,000,000,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 000,000,000,255, 000,000,000,000, 000,000,000,000,
+        000,000,000,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 000,000,255,000, 000,000,000,000, 000,000,000,000, 000,000,000,000,
+        000,000,000,255, 255,255,255,255, 255,255,255,255, 255,255,000,255, 255,255,255,255, 000,000,000,255, 000,000,000,000, 000,000,000,000,
+        000,000,000,255, 255,255,255,255, 000,000,000,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 000,000,000,255, 000,000,000,000,
+        000,000,000,255, 000,000,000,255, 000,000,000,000, 000,000,000,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 000,000,000,255,
+        000,000,000,255, 000,000,000,000, 000,000,000,000, 000,000,000,000, 000,000,000,255, 255,255,255,255, 000,000,000,255, 000,000,000,000,
+        000,000,000,000, 000,000,000,000, 000,000,000,000, 000,000,000,000, 000,000,000,000, 000,000,000,255, 000,000,000,000, 000,000,000,000
+    };
+
+    _mouse_texture = graphics::createImage(mouse_pointer, D3DFMT_A8R8G8B8, 8, 8);
+
     return true;
 }
 
@@ -98,8 +113,20 @@ void renderer::render(uint32_t background_color)
             graphics::begin_stencil(command->clip_rect.x, command->clip_rect.y, command->clip_rect.w, command->clip_rect.h);
         }
 
-        graphics::getDevice()->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertex_count, command->elem_count/3, offset, D3DFMT_INDEX16, nk_buffer_memory_const(&vertex_buffer), sizeof(nk_vertex));
+        //graphics::getDevice()->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertex_count, command->elem_count/3, offset, D3DFMT_INDEX16, nk_buffer_memory_const(&vertex_buffer), sizeof(nk_vertex));
+                
+        const int MAX_INDICES_PER_BATCH = 32766; 
         
+        int remaining = command->elem_count;
+        int indexOffset = 0;
+        while (remaining > 0) 
+        {
+            int batchCount = min(MAX_INDICES_PER_BATCH, remaining);
+            graphics::getDevice()->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertex_count, batchCount / 3, offset + indexOffset, D3DFMT_INDEX16, nk_buffer_memory_const(&vertex_buffer), sizeof(nk_vertex));
+            remaining -= batchCount;
+            indexOffset += batchCount;
+        }
+
         if (!isNullRect)
         {
             graphics::end_stencil();
@@ -113,8 +140,11 @@ void renderer::render(uint32_t background_color)
 
     nk_clear(&_context);
     nk_buffer_clear(&_commands);
+}
 
-	graphics::getDevice()->EndScene();
+void renderer::present()
+{
+    graphics::getDevice()->EndScene();
 	graphics::getDevice()->Present(NULL, NULL, NULL, NULL);
 }
 
@@ -130,30 +160,21 @@ nk_font* renderer::get_font()
 
 void renderer::mouse_pointer()
 {
-    if (nk_begin(&_context, "#overlay", nk_rect(0, 0, graphics::getWidth(), graphics::getHeight()), NK_WINDOW_NO_INPUT | NK_WINDOW_NO_SCROLLBAR))
+         struct nk_vec2 pos = _context.input.mouse.pos;
+    struct VERTEX
     {
-        _context.style.window.fixed_background = nk_style_item_color(nk_rgba(0,0,0,0));
+        float x, y, z;
+        DWORD color;
+        float u, v;
+    };
+    VERTEX quad[4] =
+    {
+        { pos.x,      pos.y,      0.0f, 0xffffffff, 0.0f, 0.0f },
+        { pos.x + 8,  pos.y,      0.0f, 0xffffffff, 1.0f, 0.0f },
+        { pos.x,      pos.y + 8,  0.0f, 0xffffffff, 0.0f, 1.0f },
+        { pos.x + 8,  pos.y + 8,  0.0f, 0xffffffff, 1.0f, 1.0f }
+    };
 
-        struct nk_vec2 pos = _context.input.mouse.pos;
-
-        float points[14];
-        points[0] = (float)pos.x;      
-        points[1] = (float)pos.y;
-        points[2] = pos.x + 6.0f;  
-        points[3] = pos.y;
-        points[4] = pos.x + 4.0f;  
-        points[5] = pos.y + 2;
-        points[6] = pos.x + 7.0f;  
-        points[7] = pos.y + 5.0f;
-        points[8] = pos.x + 5.0f;  
-        points[9] = pos.y + 7.0f;
-        points[10] = pos.x + 2.0f;  
-        points[11] = pos.y + 4.0f;
-        points[12] = pos.x;  
-        points[13] = pos.y + 6.0f;
-        nk_command_buffer* command_buffer = nk_window_get_canvas(&_context);
-        nk_fill_polygon(command_buffer, points, 5, nk_rgb(255, 255, 255));
-        nk_stroke_polygon(command_buffer, points, 7, 1.0f, nk_rgb(0, 0, 0)); 
-    }
-    nk_end(&_context);
+    graphics::getDevice()->SetTexture(0, _mouse_texture);
+    graphics::getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(VERTEX));
 }

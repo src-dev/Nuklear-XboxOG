@@ -2,6 +2,7 @@
 #include "..\graphics.h"
 #include "..\renderer.h"
 
+#define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
@@ -20,11 +21,11 @@ void canvas::render()
     nk_style_item window_background = context->style.window.fixed_background;
 
     /* use the complete window space and set background */
-    context->style.window.spacing = nk_vec2(0,0);
-    context->style.window.padding = nk_vec2(0,0);
-    context->style.window.fixed_background = nk_style_item_color(nk_rgb(250,250,250));
+    //context->style.window.spacing = nk_vec2(0,0);
+    //context->style.window.padding = nk_vec2(0,0);
+    //context->style.window.fixed_background = nk_style_item_color(nk_rgb(250,250,250));
 
-    if (nk_begin(context, "Canvas", nk_rect(10, 10, (float)500, (float)400), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+    if (nk_begin(context, "Canvas", nk_rect(10, 10, (float)500, (float)400), NK_WINDOW_TITLE|NK_WINDOW_BORDER|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_SCROLL_AUTO_HIDE))
     {
         /* allocate the complete window space for drawing */
         struct nk_rect total_space;
@@ -33,32 +34,57 @@ void canvas::render()
         nk_widget(&total_space, context);
         nk_command_buffer* painter = nk_window_get_canvas(context);
 
-        nk_fill_rect(painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
-        nk_fill_rect(painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
-        nk_draw_text(painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
-        nk_fill_rect(painter, nk_rect(250,20,100,100), 0, nk_rgb(0,0,255));
-        nk_fill_circle(painter, nk_rect(20,250,100,100), nk_rgb(255,0,0));
-        nk_fill_triangle(painter, 250, 250, 350, 250, 300, 350, nk_rgb(0,255,0));
-        nk_fill_arc(painter, 300, 180, 50, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
+        float x = painter->clip.x;
+        float y = painter->clip.y;
+        nk_fill_rect(painter, nk_rect(x + 15, y + 15, 210, 210), 5, nk_rgb(247, 230, 154));
+        nk_fill_rect(painter, nk_rect(x + 20, y + 20, 200, 200), 5, nk_rgb(188, 174, 118));
+        nk_draw_text(painter, nk_rect(x + 30, y + 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
+        nk_fill_rect(painter, nk_rect(x + 250, y + 20, 100, 100), 0, nk_rgb(0,0,255));
+        nk_fill_circle(painter, nk_rect(x + 20, y + 250, 100, 100), nk_rgb(255,0,0));
+        nk_fill_triangle(painter, x + 250, y + 250, x + 350, y + 250, x + 300, y + 350, nk_rgb(0,255,0));
+        nk_fill_arc(painter, x + 300, y + 420, 50, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
 
-        float points[12];
-        points[0] = 200; points[1] = 250;
-        points[2] = 250; points[3] = 350;
-        points[4] = 225; points[5] = 350;
-        points[6] = 200; points[7] = 300;
-        points[8] = 175; points[9] = 350;
-        points[10] = 150; points[11] = 350;
-        nk_fill_polygon(painter, points, 6, nk_rgb(0,0,0));
+        {
+            float points[12];
+            points[0]  = x + 200; points[1]  = y + 250;
+            points[2]  = x + 250; points[3]  = y + 350;
+            points[4]  = x + 225; points[5]  = y + 350;
+            points[6]  = x + 200; points[7]  = y + 300;
+            points[8]  = x + 175; points[9]  = y + 350;
+            points[10] = x + 150; points[11] = y + 350;
+            nk_fill_polygon(painter, points, 6, nk_rgb(0,0,0));
+        }
 
-        nk_stroke_line(painter, 15, 10, 200, 10, 2.0f, nk_rgb(189,45,75));
-        nk_stroke_rect(painter, nk_rect(370, 20, 100, 100), 10, 3, nk_rgb(0,0,255));
-        nk_stroke_curve(painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
-        nk_stroke_circle(painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
-        nk_stroke_triangle(painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
+        {
+            float points[12];
+            points[0]  = x + 200; points[1]  = y + 370;
+            points[2]  = x + 250; points[3]  = y + 470;
+            points[4]  = x + 225; points[5]  = y + 470;
+            points[6]  = x + 200; points[7]  = y + 420;
+            points[8]  = x + 175; points[9]  = y + 470;
+            points[10] = x + 150; points[11] = y + 470;
+            nk_stroke_polygon(painter, points, 6, 4, nk_rgb(0,0,0));
+        }
 
-        context->style.window.spacing = panel_padding;
-        context->style.window.padding = item_spacing;
-        context->style.window.fixed_background = window_background;
+        {
+            float points[8];
+            points[0]  = x + 250; points[1]  = y + 200;
+            points[2]  = x + 275; points[3]  = y + 220;
+            points[4]  = x + 325; points[5]  = y + 170;
+            points[6]  = x + 350; points[7]  = y + 200;
+            nk_stroke_polyline(painter, points, 4, 2, nk_rgb(255,128,0));
+        }
+
+        nk_stroke_line(painter, x + 15, y + 10, x + 200, y + 10, 2.0f, nk_rgb(189,45,75));
+        nk_stroke_rect(painter, nk_rect(x + 370, y + 20, 100, 100), 10, 3, nk_rgb(0,0,255));
+        nk_stroke_curve(painter, x + 380, y + 200, x + 405, y + 270, x + 455, y + 120, x + 480, y + 200, 2, nk_rgb(0,150,220));
+        nk_stroke_circle(painter, nk_rect(x + 20, y + 370, 100, 100), 5, nk_rgb(0,255,120));
+        nk_stroke_triangle(painter, x + 370, y + 250, x + 470, y + 250, x + 420, y + 350, 6, nk_rgb(255,0,143));
+        nk_stroke_arc(painter, x + 420, y + 420, 50, 0, 3.141592654f * 3.0f / 4.0f, 5, nk_rgb(0,255,255));
+
+        //context->style.window.spacing = panel_padding;
+        //context->style.window.padding = item_spacing;
+        //context->style.window.fixed_background = window_background;
     }
     nk_end(context);
 }

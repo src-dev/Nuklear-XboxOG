@@ -312,6 +312,12 @@
 				Name="Demos"
 				Filter="">
 				<File
+					RelativePath=".\Demos\calculator.cpp">
+				</File>
+				<File
+					RelativePath=".\Demos\calculator.h">
+				</File>
+				<File
 					RelativePath=".\Demos\canvas.cpp">
 				</File>
 				<File
@@ -322,6 +328,18 @@
 				</File>
 				<File
 					RelativePath=".\Demos\controls.h">
+				</File>
+				<File
+					RelativePath=".\Demos\overview.cpp">
+				</File>
+				<File
+					RelativePath=".\Demos\overview.h">
+				</File>
+				<File
+					RelativePath=".\Demos\style.cpp">
+				</File>
+				<File
+					RelativePath=".\Demos\style.h">
 				</File>
 			</Filter>
 		</Filter>

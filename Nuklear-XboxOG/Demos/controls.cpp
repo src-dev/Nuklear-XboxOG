@@ -3,6 +3,7 @@
 #include "..\renderer.h"
 #include "..\debug.h"
 
+#define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
@@ -14,14 +15,12 @@ void controls::render()
 {
     nk_context* context = renderer::get_context();
 
-    //if (nk_begin(context, "Controls", nk_rect(50, 50, 230, 250), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE| NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
-   
     if (nk_begin(context, "Controls", nk_rect(50, 50, 230, 250), NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
     {
         enum {EASY, HARD};
         static int op = EASY;
         static int property = 20;    
-        struct nk_colorf bg = { 0.10f, 0.18f, 0.24f, 1.0f }; 
+        static struct nk_colorf bg = { 0.10f, 0.18f, 0.24f, 1.0f }; 
 
         nk_layout_row_static(context, 30, 80, 1);
         if (nk_button_label(context, "button"))

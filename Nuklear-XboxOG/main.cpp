@@ -4,6 +4,8 @@
 #include "input_manager.h"
 #include "Demos\controls.h"
 #include "Demos\canvas.h"
+#include "Demos\calculator.h"
+#include "Demos\overview.h"
 
 void __cdecl main()
 {
@@ -18,12 +20,16 @@ void __cdecl main()
 
         canvas::render();
         controls::render();
-;
+        calculator::render();
+        overview::render();
+
+        renderer::render(0xff333333);
+
         if (input_manager::has_mouse(-1))
         {
             renderer::mouse_pointer();
         }
 
-        renderer::render(0xff333333);
+        renderer::present();
     }
 }
