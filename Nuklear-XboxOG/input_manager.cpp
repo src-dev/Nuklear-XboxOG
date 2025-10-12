@@ -574,26 +574,33 @@ void input_manager::pump_input(nk_context *context)
         }
     }
 
-    nk_input_motion(context, (int)mMousePosition.x, (int)mMousePosition.y);
+    bool left_pressed = false;
+    bool middle_pressed = false;
+    bool right_pressed = false;
 
     MouseState mouseState;
     memset(&mouseState, 0, sizeof(mouseState));
     if (try_get_mouse_state(-1, &mouseState))
     {
-        nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_LEFT_BUTTON]);
-        nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_MIDDLE_BUTTON]);
-        nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_RIGHT_BUTTON]);
+        left_pressed |= mouseState.buttons[MOUSE_LEFT_BUTTON];
+        middle_pressed |= mouseState.buttons[MOUSE_MIDDLE_BUTTON];
+        right_pressed |= mouseState.buttons[MOUSE_RIGHT_BUTTON];
     }
 
     ControllerState controllerState;
     memset(&controllerState, 0, sizeof(controllerState));
     if (try_get_controller_state(-1, &controllerState))
     {
-        nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_A_BUTTON]);
-        nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_X_BUTTON]);
-        nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_B_BUTTON]);
+        left_pressed |= controllerState.buttons[CONTROLLER_A_BUTTON];
+        middle_pressed |= controllerState.buttons[CONTROLLER_X_BUTTON];
+        right_pressed |= controllerState.buttons[CONTROLLER_B_BUTTON];
     }
 
+    nk_input_motion(context, (int)mMousePosition.x, (int)mMousePosition.y);
+    nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, left_pressed);
+    nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, middle_pressed);
+    nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, right_pressed);
+ 
     nk_input_end(context);
 }
 
