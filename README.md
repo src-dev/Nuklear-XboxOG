@@ -9,9 +9,8 @@
 
 Nuklear for Xbox Original is a immediate mode UI system for Xbox Original. 
 
-![GitHub contributors](https://img.shields.io/github/contributors/Team-Resurgent/Pandora-V2?style=flat-square)
-![GitHub repo file count](https://img.shields.io/github/directory-file-count/Team-Resurgent/Pandora-V2?style=flat-square)
-![GitHub repo size](https://img.shields.io/github/repo-size/Team-Resurgent/Pandora-V2?style=flat-square)
-![GitHub all releases](https://img.shields.io/github/downloads/Team-Resurgent/Pandora-V2/total?style=flat-square)
+![GitHub contributors](https://img.shields.io/github/contributors/Team-Resurgent/Nuklear-XboxOG?style=flat-square)
+![GitHub repo file count](https://img.shields.io/github/directory-file-count/Team-Resurgent/Nuklear-XboxOG?style=flat-square)
+![GitHub repo size](https://img.shields.io/github/repo-size/Team-Resurgent/Nuklear-XboxOG?style=flat-square)
 
 </div>
