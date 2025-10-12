@@ -15,8 +15,9 @@ class renderer
 {
 public:
     static bool init();
-    static void render(uint32_t background_color);
-    static void present();
+    static void begin_render(uint32_t background_color);
+    static void render();
+    static void end_render();
     static nk_context* get_context();
     static nk_font* get_font();
     static void mouse_pointer();

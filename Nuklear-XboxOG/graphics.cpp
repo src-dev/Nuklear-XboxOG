@@ -118,34 +118,6 @@ bool graphics::createDevice()
 	}
     mD3dDevice = d3dDevice;
 
-    const float L = 0.5f;
-    const float R = (float)mWidth + 0.5f;
-    const float T = 0.5f;
-    const float B = (float)mHeight + 0.5f;
-    float matrix[4][4] = {
-        { 0.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 0.0f, 1.0f },
-    };
-    matrix[0][0] = 2.0f / (R - L);
-    matrix[1][1] = 2.0f / (T - B);
-    matrix[3][0] = (R + L) / (L - R);
-    matrix[3][1] = (T + B) / (B - T);
-    
-    D3DXMATRIX matProjection;
-    memcpy(matProjection, matrix, sizeof(matrix));
-
-    mD3dDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
-
-	D3DXMATRIX  matView;
-    D3DXMatrixIdentity(&matView);
-    mD3dDevice->SetTransform( D3DTS_VIEW, &matView);
-
-	D3DXMATRIX matWorld;
-	D3DXMatrixIdentity(&matWorld);
-	mD3dDevice->SetTransform( D3DTS_WORLD, &matWorld);
-
     mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
 
     /* blend state */

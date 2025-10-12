@@ -23,8 +23,9 @@ void __cdecl main()
         calculator::render();
         overview::render();
 
-        renderer::render(0xff333333);
+        renderer::begin_render(0xff333333);
+        renderer::render();
         renderer::mouse_pointer();
-        renderer::present();
+        renderer::end_render();
     }
 }

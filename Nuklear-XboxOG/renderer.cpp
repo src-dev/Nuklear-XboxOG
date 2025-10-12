@@ -83,10 +83,41 @@ bool renderer::init()
     return true;
 }
 
-void renderer::render(uint32_t background_color)
+void renderer::begin_render(uint32_t background_color)
 {
     graphics::getDevice()->BeginScene();
     graphics::getDevice()->Clear(0L, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, background_color, 1.0f, 0L);
+}
+
+void renderer::render()
+{
+    const float L = 0.5f;
+    const float R = (float)graphics::getWidth() + 0.5f;
+    const float T = 0.5f;
+    const float B = (float)graphics::getHeight() + 0.5f;
+    float matrix[4][4] = {
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 0.0f, 1.0f },
+    };
+    matrix[0][0] = 2.0f / (R - L);
+    matrix[1][1] = 2.0f / (T - B);
+    matrix[3][0] = (R + L) / (L - R);
+    matrix[3][1] = (T + B) / (B - T);
+    
+    D3DXMATRIX matProjection;
+    memcpy(matProjection, matrix, sizeof(matrix));
+
+    graphics::getDevice()->SetTransform(D3DTS_PROJECTION, &matProjection);
+
+	D3DXMATRIX  matView;
+    D3DXMatrixIdentity(&matView);
+    graphics::getDevice()->SetTransform( D3DTS_VIEW, &matView);
+
+	D3DXMATRIX matWorld;
+	D3DXMatrixIdentity(&matWorld);
+	graphics::getDevice()->SetTransform( D3DTS_WORLD, &matWorld);
 
     /* convert shapes into vertexes */
     nk_buffer vertex_buffer;
@@ -143,7 +174,7 @@ void renderer::render(uint32_t background_color)
     nk_buffer_clear(&_commands);
 }
 
-void renderer::present()
+void renderer::end_render()
 {
     graphics::getDevice()->EndScene();
 	graphics::getDevice()->Present(NULL, NULL, NULL, NULL);
