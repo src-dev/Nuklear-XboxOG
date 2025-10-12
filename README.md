@@ -7,7 +7,7 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J7L5UMN)
 [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/teamresurgent)
 
-Nuklear for Xbox Original is a immediate mode UI system for Xbox Original. 
+Nuklear for Xbox Original is a immediate mode UI system for the Xbox Original. 
 
 ![GitHub contributors](https://img.shields.io/github/contributors/Team-Resurgent/Nuklear-XboxOG?style=flat-square)
 ![GitHub repo file count](https://img.shields.io/github/directory-file-count/Team-Resurgent/Nuklear-XboxOG?style=flat-square)
