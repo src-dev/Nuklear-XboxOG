@@ -3,6 +3,66 @@
 #include "math.h"
 #include "debug.h"
 
+extern "C" 
+{
+    extern XPP_DEVICE_TYPE XDEVICE_TYPE_IR_REMOTE_TABLE;
+    #define XDEVICE_TYPE_IR_REMOTE (&XDEVICE_TYPE_IR_REMOTE_TABLE)
+}
+
+#define XINPUT_IR_REMOTE_DISPLAY 213
+#define XINPUT_IR_REMOTE_REVERSE 226
+#define XINPUT_IR_REMOTE_PLAY 234
+#define XINPUT_IR_REMOTE_FORWARD 227
+#define XINPUT_IR_REMOTE_SKIP_MINUS 221
+#define XINPUT_IR_REMOTE_STOP 224
+#define XINPUT_IR_REMOTE_PAUSE 230
+#define XINPUT_IR_REMOTE_SKIP_PLUS 223
+#define XINPUT_IR_REMOTE_TITLE 229
+#define XINPUT_IR_REMOTE_INFO 195
+#define XINPUT_IR_REMOTE_UP 166
+#define XINPUT_IR_REMOTE_DOWN 167
+#define XINPUT_IR_REMOTE_LEFT 169
+#define XINPUT_IR_REMOTE_RIGHT 168
+#define XINPUT_IR_REMOTE_SELECT 11
+#define XINPUT_IR_REMOTE_MENU 247
+#define XINPUT_IR_REMOTE_BACK 216
+#define XINPUT_IR_REMOTE_1 206
+#define XINPUT_IR_REMOTE_2 205
+#define XINPUT_IR_REMOTE_3 204
+#define XINPUT_IR_REMOTE_4 203
+#define XINPUT_IR_REMOTE_5 202
+#define XINPUT_IR_REMOTE_6 201
+#define XINPUT_IR_REMOTE_7 200
+#define XINPUT_IR_REMOTE_8 199
+#define XINPUT_IR_REMOTE_9 198
+#define XINPUT_IR_REMOTE_0 207
+#define XINPUT_IR_REMOTE_MCE_POWER 196
+#define XINPUT_IR_REMOTE_MCE_MY_TV 49
+#define XINPUT_IR_REMOTE_MCE_MY_MUSIC 9
+#define XINPUT_IR_REMOTE_MCE_MY_PICTURES 6
+#define XINPUT_IR_REMOTE_MCE_MY_VIDEOS 7
+#define XINPUT_IR_REMOTE_MCE_RECORD 232
+#define XINPUT_IR_REMOTE_MCE_START 37
+#define XINPUT_IR_REMOTE_MCE_VOLUME_PLUS 208
+#define XINPUT_IR_REMOTE_MCE_VOLUME_MINUS 209
+#define XINPUT_IR_REMOTE_MCE_CHANNEL_PLUS 210
+#define XINPUT_IR_REMOTE_MCE_CHANNEL_MINUS 211
+#define XINPUT_IR_REMOTE_MCE_MUTE 192
+#define XINPUT_IR_REMOTE_MCE_RECORDED_TV 101
+#define XINPUT_IR_REMOTE_MCE_LIVE_TV 24
+#define XINPUT_IR_REMOTE_MCE_STAR 40
+#define XINPUT_IR_REMOTE_MCE_HASH 41
+#define XINPUT_IR_REMOTE_MCE_CLEAR 249
+
+typedef struct _XINPUT_STATEEX
+{
+  DWORD dwPacketNumber;  
+  BYTE wButtons;
+  BYTE region;  
+  BYTE counter;  
+  BYTE firstEvent; 
+} XINPUT_STATEEX;
+
 namespace
 {
 	bool mInitialized = false;
@@ -15,6 +75,11 @@ namespace
     DWORD mControllerLastPacketNumber[XGetPortCount()];
     ControllerState mControllerStatesCurrent[XGetPortCount()];
     ControllerState mControllerStatesPrevious[XGetPortCount()];
+
+    HANDLE mRemoteHandles[XGetPortCount()];
+    DWORD mRemoteLastPacketNumber[XGetPortCount()];
+    RemoteState mRemoteStatesCurrent[XGetPortCount()];
+    RemoteState mRemoteStatesPrevious[XGetPortCount()];
 
 	HANDLE mMouseHandles[XGetPortCount()];
     DWORD mMouseLastPacketNumber[XGetPortCount()];
@@ -37,6 +102,11 @@ void input_manager::init()
     memset(mControllerLastPacketNumber, 0, sizeof(mControllerLastPacketNumber));
     memset(mControllerStatesCurrent, 0, sizeof(mControllerStatesCurrent));
     memset(mControllerStatesPrevious, 0, sizeof(mControllerStatesPrevious));
+
+    memset(mRemoteHandles, 0, sizeof(mRemoteHandles));
+    memset(mRemoteLastPacketNumber, 0, sizeof(mRemoteLastPacketNumber));
+    memset(mRemoteStatesCurrent, 0, sizeof(mRemoteStatesCurrent));
+    memset(mRemoteStatesPrevious, 0, sizeof(mRemoteStatesPrevious));
 
     memset(mMouseHandles, 0, sizeof(mMouseHandles));
     memset(mMouseLastPacketNumber, 0, sizeof(mMouseLastPacketNumber));
@@ -122,6 +192,88 @@ void input_manager::process_controller()
             mMousePosition.x = math::clamp_float(mMousePosition.x + mControllerStatesCurrent[i].thumb_left_dx, 0, (float)graphics::getWidth());
             mMousePosition.y = math::clamp_float(mMousePosition.y + mControllerStatesCurrent[i].thumb_left_dy, 0, (float)graphics::getHeight());
             mControllerLastPacketNumber[i] = controllerInputState.dwPacketNumber;
+        }
+    }
+}
+
+void input_manager::process_remote()
+{
+    DWORD insertions = 0;
+	DWORD removals = 0;
+    if (XGetDeviceChanges(XDEVICE_TYPE_IR_REMOTE, &insertions, &removals) == TRUE)
+	{
+		for (int i = 0; i < XGetPortCount(); i++)
+		{
+			if ((insertions & 1) == 1)
+			{
+				mRemoteHandles[i] = XInputOpen(XDEVICE_TYPE_IR_REMOTE, i, XDEVICE_NO_SLOT, NULL);
+			}
+			if ((removals & 1) == 1)
+			{
+				XInputClose(mRemoteHandles[i]);
+				mRemoteHandles[i] = NULL;
+			}
+			insertions = insertions >> 1;
+			removals = removals >> 1;
+		}
+	}
+
+    for (int i = 0; i < XGetPortCount(); i++)
+	{
+        XINPUT_STATEEX remoteInputState;
+        if (mRemoteHandles[i] == NULL || XInputGetState(mRemoteHandles[i], (XINPUT_STATE*)&remoteInputState) != 0 || remoteInputState.firstEvent == 0x00) 
+		{
+			continue;
+		}
+
+        if (mRemoteLastPacketNumber[i] != remoteInputState.dwPacketNumber)
+        {
+            memcpy(&mRemoteStatesPrevious[i], &mRemoteStatesCurrent[i], sizeof(RemoteState));
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_DISPLAY] = remoteInputState.wButtons == XINPUT_IR_REMOTE_DISPLAY;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_REVERSE] = remoteInputState.wButtons == XINPUT_IR_REMOTE_REVERSE;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_PLAY] = remoteInputState.wButtons == XINPUT_IR_REMOTE_PLAY;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_FORWARD] = remoteInputState.wButtons == XINPUT_IR_REMOTE_FORWARD;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_SKIP_MINUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_SKIP_MINUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_STOP] = remoteInputState.wButtons == XINPUT_IR_REMOTE_STOP;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_PAUSE] = remoteInputState.wButtons == XINPUT_IR_REMOTE_PAUSE;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_SKIP_PLUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_SKIP_PLUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_TITLE] = remoteInputState.wButtons == XINPUT_IR_REMOTE_TITLE;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_INFO] = remoteInputState.wButtons == XINPUT_IR_REMOTE_INFO;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_UP] = remoteInputState.wButtons == XINPUT_IR_REMOTE_UP;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_DOWN] = remoteInputState.wButtons == XINPUT_IR_REMOTE_DOWN;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_LEFT] = remoteInputState.wButtons == XINPUT_IR_REMOTE_LEFT;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_RIGHT] = remoteInputState.wButtons == XINPUT_IR_REMOTE_RIGHT;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_SELECT] = remoteInputState.wButtons == XINPUT_IR_REMOTE_SELECT;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MENU] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MENU;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_BACK] = remoteInputState.wButtons == XINPUT_IR_REMOTE_BACK;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_1] = remoteInputState.wButtons == XINPUT_IR_REMOTE_1;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_2] = remoteInputState.wButtons == XINPUT_IR_REMOTE_2;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_3] = remoteInputState.wButtons == XINPUT_IR_REMOTE_3;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_4] = remoteInputState.wButtons == XINPUT_IR_REMOTE_4;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_5] = remoteInputState.wButtons == XINPUT_IR_REMOTE_5;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_6] = remoteInputState.wButtons == XINPUT_IR_REMOTE_6;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_7] = remoteInputState.wButtons == XINPUT_IR_REMOTE_7;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_8] = remoteInputState.wButtons == XINPUT_IR_REMOTE_8;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_9] = remoteInputState.wButtons == XINPUT_IR_REMOTE_9;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_0] = remoteInputState.wButtons == XINPUT_IR_REMOTE_0;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_POWER] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_POWER;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_MY_TV] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_MY_TV;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_MY_MUSIC] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_MY_MUSIC;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_MY_PICTURES] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_MY_PICTURES;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_MY_VIDEOS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_MY_VIDEOS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_RECORD] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_RECORD;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_START] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_START;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_VOLUME_PLUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_VOLUME_PLUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_VOLUME_MINUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_VOLUME_MINUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_CHANNEL_PLUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_CHANNEL_PLUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_CHANNEL_MINUS] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_CHANNEL_MINUS;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_MUTE] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_MUTE;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_RECORDED_TV] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_RECORDED_TV;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_LIVE_TV] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_LIVE_TV;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_STAR] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_STAR;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_HASH] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_HASH;
+            mRemoteStatesCurrent[i].buttons[REMOTE_BUTTON_MCE_CLEAR] = remoteInputState.wButtons == XINPUT_IR_REMOTE_MCE_CLEAR;
+            mRemoteLastPacketNumber[i] = remoteInputState.dwPacketNumber;
         }
     }
 }
@@ -242,6 +394,22 @@ bool input_manager::controller_pressed(CONTROLLER_BUTTON button, int port)
 	return false;
 }
 
+bool input_manager::remote_pressed(REMOTE_BUTTON button, int port)
+{
+    for (int i = 0; i < XGetPortCount(); i++)
+	{
+		if (port >= 0 && port != i || mRemoteHandles[i] == NULL)
+		{
+			continue;
+		}
+		if (mRemoteStatesCurrent[i].buttons[button] == true && mRemoteStatesPrevious[i].buttons[button] == false)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool input_manager::mouse_pressed(MOUSE_BUTTON button, int port)
 {
 	for (int i = 0; i < XGetPortCount(); i++)
@@ -275,6 +443,23 @@ bool input_manager::try_get_controller_state(int port, ControllerState* controll
 	return false;
 }
 
+bool input_manager::try_get_remote_state(int port, RemoteState* remoteState)
+{
+    if (remoteState != NULL)
+    {
+	    for (int i = 0; i < XGetPortCount(); i++)
+	    {
+		    if (port >= 0 && port != i || mRemoteHandles[i] == NULL)
+		    {
+			    continue;
+		    }
+            *remoteState = mRemoteStatesCurrent[i];
+            return true;
+	    }
+    }
+	return false;
+}
+
 bool input_manager::try_get_mouse_state(int port, MouseState* mouseState)
 {
     if (mouseState != NULL)
@@ -292,11 +477,41 @@ bool input_manager::try_get_mouse_state(int port, MouseState* mouseState)
 	return false;
 }
 
+bool input_manager::try_get_keyboard_state(int port, KeyboardState* keyboardState)
+{
+    if (keyboardState != NULL)
+    {
+	    for (int i = 0; i < XGetPortCount(); i++)
+	    {
+		    if (port >= 0 && port != i || mKeyboardHandles[i] == NULL)
+		    {
+			    continue;
+		    }
+            *keyboardState = mKeyboardState;
+            return true;
+	    }
+    }
+	return false;
+}
+
 bool input_manager::has_controller(int port)
 {
 	for (int i = 0; i < XGetPortCount(); i++)
 	{
 		if (port >= 0 && port != i || mControllerHandles[i] == NULL)
+		{
+			continue;
+		}
+        return true;
+	}
+	return false;
+}
+
+bool input_manager::has_remote(int port)
+{
+	for (int i = 0; i < XGetPortCount(); i++)
+	{
+		if (port >= 0 && port != i || mRemoteHandles[i] == NULL)
 		{
 			continue;
 		}
@@ -318,26 +533,10 @@ bool input_manager::has_mouse(int port)
 	return false;
 }
 
-bool input_manager::try_get_keyboard_state(int port, KeyboardState* keyboardState)
-{
-    if (keyboardState != NULL)
-    {
-	    for (int i = 0; i < XGetPortCount(); i++)
-	    {
-		    if (port >= 0 && port != i || mKeyboardHandles[i] == NULL)
-		    {
-			    continue;
-		    }
-            *keyboardState = mKeyboardState;
-            return true;
-	    }
-    }
-	return false;
-}
-
 void input_manager::pump_input(nk_context *context)
 {
     process_controller();
+    process_remote(); 
     process_mouse();
     process_keyboard();
 

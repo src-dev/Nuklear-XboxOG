@@ -46,6 +46,59 @@ typedef enum CONTROLLER_BUTTON
     CONTROLLER_RTHUMB_BUTTON = 15,
 } CONTROLLER_BUTTON;
 
+typedef struct RemoteState
+{
+    bool buttons[44];
+} RemoteState;
+
+typedef enum REMOTE_BUTTON
+{
+    REMOTE_BUTTON_DISPLAY = 0,
+    REMOTE_BUTTON_REVERSE = 1,
+    REMOTE_BUTTON_PLAY = 2,
+    REMOTE_BUTTON_FORWARD = 3,
+    REMOTE_BUTTON_SKIP_MINUS = 4,
+    REMOTE_BUTTON_STOP = 5,
+    REMOTE_BUTTON_PAUSE = 6,
+    REMOTE_BUTTON_SKIP_PLUS = 7,
+    REMOTE_BUTTON_TITLE = 8,
+    REMOTE_BUTTON_INFO = 9,
+    REMOTE_BUTTON_UP = 10,
+    REMOTE_BUTTON_DOWN = 11,
+    REMOTE_BUTTON_LEFT = 12,
+    REMOTE_BUTTON_RIGHT = 13,
+    REMOTE_BUTTON_SELECT = 14,
+    REMOTE_BUTTON_MENU = 15,
+    REMOTE_BUTTON_BACK = 16,
+    REMOTE_BUTTON_1 = 17,
+    REMOTE_BUTTON_2 = 18,
+    REMOTE_BUTTON_3 = 19,
+    REMOTE_BUTTON_4 = 20,
+    REMOTE_BUTTON_5 = 21,
+    REMOTE_BUTTON_6 = 22,
+    REMOTE_BUTTON_7 = 23,
+    REMOTE_BUTTON_8 = 24,
+    REMOTE_BUTTON_9 = 25,
+    REMOTE_BUTTON_0 = 26,
+    REMOTE_BUTTON_MCE_POWER = 27,
+    REMOTE_BUTTON_MCE_MY_TV = 28,
+    REMOTE_BUTTON_MCE_MY_MUSIC = 29,
+    REMOTE_BUTTON_MCE_MY_PICTURES = 30,
+    REMOTE_BUTTON_MCE_MY_VIDEOS = 31,
+    REMOTE_BUTTON_MCE_RECORD = 32,
+    REMOTE_BUTTON_MCE_START = 33,
+    REMOTE_BUTTON_MCE_VOLUME_PLUS = 34,
+    REMOTE_BUTTON_MCE_VOLUME_MINUS = 35,
+    REMOTE_BUTTON_MCE_CHANNEL_PLUS = 36,
+    REMOTE_BUTTON_MCE_CHANNEL_MINUS = 37,
+    REMOTE_BUTTON_MCE_MUTE = 38,
+    REMOTE_BUTTON_MCE_RECORDED_TV = 39,
+    REMOTE_BUTTON_MCE_LIVE_TV = 40,
+    REMOTE_BUTTON_MCE_STAR = 41,
+    REMOTE_BUTTON_MCE_HASH = 42,
+    REMOTE_BUTTON_MCE_CLEAR = 43
+} REMOTE_BUTTON;
+
 typedef struct MouseState
 {
   float dx;
@@ -86,15 +139,19 @@ class input_manager
 public:
     static void init();
     static void process_controller();
+    static void process_remote();
     static void process_mouse();
     static void process_keyboard();
     static bool controller_pressed(CONTROLLER_BUTTON button, int port);
+    static bool remote_pressed(REMOTE_BUTTON button, int port);
     static bool mouse_pressed(MOUSE_BUTTON button, int port);
     static bool try_get_controller_state(int port, ControllerState* controllerState);
+    static bool try_get_remote_state(int port, RemoteState* remoteState);
     static bool try_get_mouse_state(int port, MouseState* mouseState);
-    static bool has_controller(int port);
-    static bool has_mouse(int port);
     static bool try_get_keyboard_state(int port, KeyboardState* keyboardState);
+    static bool has_controller(int port);
+    static bool has_remote(int port);
+    static bool has_mouse(int port);
     static void pump_input(nk_context *context);
     static MousePosition get_mouse_position();
 };
