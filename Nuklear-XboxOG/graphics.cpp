@@ -187,17 +187,17 @@ void graphics::begin_stencil(float x, float y, float w, float h)
     mD3dDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
     mD3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
 
-    struct Vertex { float x,y,z,rhw; };
-    Vertex quad[4] = {
-        { (float)x, (float)y, 0.0f, 1.0f },
-        { (float)(x+w), (float)y, 0.0f, 1.0f },
-        { (float)x, (float)(y+h), 0.0f, 1.0f },
-        { (float)(x+w), (float)(y+h), 0.0f, 1.0f },
+    struct stencil_vertex { float x,y,z,rhw; };
+    stencil_vertex quad[4] = {
+        { x, y, 0.0f, 1.0f },
+        { x + w, y, 0.0f, 1.0f },
+        { x, y + h, 0.0f, 1.0f },
+        { x + w, y + h, 0.0f, 1.0f },
     };
 
     mD3dDevice->Clear(0L, NULL, D3DCLEAR_STENCIL, 0, 1.0f, 0L);
     mD3dDevice->SetVertexShader(D3DFVF_XYZRHW);
-    mD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(Vertex));
+    mD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(stencil_vertex));
     mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
 
     mD3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);

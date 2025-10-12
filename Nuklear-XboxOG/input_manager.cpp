@@ -7,6 +7,10 @@ namespace
 {
 	bool mInitialized = false;
 
+    float velocity_x;
+    float velocity_y;
+    MousePosition mMousePosition;
+
 	HANDLE mControllerHandles[XGetPortCount()];
     DWORD mControllerLastPacketNumber[XGetPortCount()];
     ControllerState mControllerStatesCurrent[XGetPortCount()];
@@ -24,6 +28,10 @@ namespace
 void input_manager::init()
 {
     XInitDevices(0, 0);
+
+    velocity_x = 0;
+    velocity_y = 0;
+    memset(&mMousePosition, 0, sizeof(mMousePosition));
 
     memset(mControllerHandles, 0, sizeof(mControllerHandles));
     memset(mControllerLastPacketNumber, 0, sizeof(mControllerLastPacketNumber));
@@ -98,43 +106,21 @@ void input_manager::process_controller()
             
             const float sensitivity = 10.0f;
             const float acceleration = 1.6f;
-            const float friction     = 0.85f;
-            const float maxSpeed     = 15.0f;
-            const float deadzone     = 0.25f;
+            const float friction = 0.85f;
+            const float maxSpeed = 15.0f;
+            const float deadzone = 0.25f;
 
             float lx = controllerInputState.Gamepad.sThumbLX / 32768.0f;
             float ly = -(controllerInputState.Gamepad.sThumbLY / 32768.0f);
-            float rx = controllerInputState.Gamepad.sThumbRX / 32768.0f;
-            float ry = -(controllerInputState.Gamepad.sThumbRY / 32768.0f);
-
             lx = fabsf(lx) < deadzone ? 0 : (lx - math::copy_sign(deadzone, lx)) / (1.0f - deadzone);
             ly = fabsf(ly) < deadzone ? 0 : (ly - math::copy_sign(deadzone, ly)) / (1.0f - deadzone);
-            rx = fabsf(rx) < deadzone ? 0 : (rx - math::copy_sign(deadzone, rx)) / (1.0f - deadzone);
-            ry = fabsf(ry) < deadzone ? 0 : (ry - math::copy_sign(deadzone, ry)) / (1.0f - deadzone);
+            velocity_x = math::clamp_float((velocity_x + lx * acceleration) * friction, -maxSpeed, maxSpeed);
+            velocity_y = math::clamp_float((velocity_y + ly * acceleration) * friction, -maxSpeed, maxSpeed);
+            mControllerStatesCurrent[i].thumb_left_dx = lx * sensitivity;
+            mControllerStatesCurrent[i].thumb_left_dy = ly * sensitivity;
 
-            mControllerStatesCurrent[i].velocity_left_x = (mControllerStatesPrevious[i].velocity_left_x + lx * acceleration) * friction;
-            mControllerStatesCurrent[i].velocity_left_y = (mControllerStatesPrevious[i].velocity_left_y + ly * acceleration) * friction;
-            mControllerStatesCurrent[i].velocity_left_x = math::clamp_float(mControllerStatesCurrent[i].velocity_left_x, -maxSpeed, maxSpeed);
-            mControllerStatesCurrent[i].velocity_left_y = math::clamp_float(mControllerStatesCurrent[i].velocity_left_y, -maxSpeed, maxSpeed);
-            
-            mControllerStatesCurrent[i].velocity_right_x = (mControllerStatesPrevious[i].velocity_right_x + lx * acceleration) * friction;
-            mControllerStatesCurrent[i].velocity_right_y = (mControllerStatesPrevious[i].velocity_right_y + ly * acceleration) * friction;
-            mControllerStatesCurrent[i].velocity_right_x = math::clamp_float(mControllerStatesCurrent[i].velocity_right_x, -maxSpeed, maxSpeed);
-            mControllerStatesCurrent[i].velocity_right_y = math::clamp_float(mControllerStatesCurrent[i].velocity_right_y, -maxSpeed, maxSpeed);
-
-            lx = lx * sensitivity;
-            ly = ly * sensitivity;
-            rx = rx * sensitivity;
-            ry = ry * sensitivity;
-
-            mControllerStatesCurrent[i].thumb_left_dx = (int)lx;
-            mControllerStatesCurrent[i].thumb_left_dy = (int)ly;
-            mControllerStatesCurrent[i].thumb_right_dx = (int)rx;
-            mControllerStatesCurrent[i].thumb_right_dy = (int)ry;
-            mControllerStatesCurrent[i].thumb_left_x = math::clamp_int((int)(mControllerStatesPrevious[i].thumb_left_x + lx), 0, graphics::getWidth());
-            mControllerStatesCurrent[i].thumb_left_y = math::clamp_int((int)(mControllerStatesPrevious[i].thumb_left_y + ly), 0, graphics::getHeight());
-            mControllerStatesCurrent[i].thumb_right_x = math::clamp_int((int)(mControllerStatesPrevious[i].thumb_right_x + rx), 0, graphics::getWidth());
-            mControllerStatesCurrent[i].thumb_right_y = math::clamp_int((int)(mControllerStatesPrevious[i].thumb_right_y + ry), 0, graphics::getHeight());
+            mMousePosition.x = math::clamp_float(mMousePosition.x + mControllerStatesCurrent[i].thumb_left_dx, 0, (float)graphics::getWidth());
+            mMousePosition.y = math::clamp_float(mMousePosition.y + mControllerStatesCurrent[i].thumb_left_dy, 0, (float)graphics::getHeight());
             mControllerLastPacketNumber[i] = controllerInputState.dwPacketNumber;
         }
     }
@@ -176,13 +162,13 @@ void input_manager::process_mouse()
             mMouseStatesCurrent[i].dx = mouseInputState.DebugMouse.cMickeysX;
             mMouseStatesCurrent[i].dy = mouseInputState.DebugMouse.cMickeysY;
             mMouseStatesCurrent[i].dz = mouseInputState.DebugMouse.cWheel;
-            mMouseStatesCurrent[i].x = math::clamp_int(mMouseStatesPrevious[i].x + mMouseStatesCurrent[i].dx, 0, graphics::getWidth());
-            mMouseStatesCurrent[i].y = math::clamp_int(mMouseStatesPrevious[i].y + mMouseStatesCurrent[i].dy, 0, graphics::getHeight());
             mMouseStatesCurrent[i].buttons[MOUSE_LEFT_BUTTON] = (mouseInputState.DebugMouse.bButtons & XINPUT_DEBUG_MOUSE_LEFT_BUTTON) != 0;
             mMouseStatesCurrent[i].buttons[MOUSE_RIGHT_BUTTON] = (mouseInputState.DebugMouse.bButtons & XINPUT_DEBUG_MOUSE_RIGHT_BUTTON) != 0;
             mMouseStatesCurrent[i].buttons[MOUSE_MIDDLE_BUTTON] = (mouseInputState.DebugMouse.bButtons & XINPUT_DEBUG_MOUSE_MIDDLE_BUTTON) != 0;
             mMouseStatesCurrent[i].buttons[MOUSE_EXTRA_BUTTON1] = (mouseInputState.DebugMouse.bButtons & XINPUT_DEBUG_MOUSE_XBUTTON1) != 0;
             mMouseStatesCurrent[i].buttons[MOUSE_EXTRA_BUTTON2] = (mouseInputState.DebugMouse.bButtons & XINPUT_DEBUG_MOUSE_XBUTTON2) != 0;
+            mMousePosition.x = math::clamp_float(mMousePosition.x + mMouseStatesCurrent[i].dx, 0, (float)graphics::getWidth());
+            mMousePosition.y = math::clamp_float(mMousePosition.y + mMouseStatesCurrent[i].dy, 0, (float)graphics::getHeight());
             mMouseLastPacketNumber[i] = mouseInputState.dwPacketNumber;
         }
     }
@@ -389,25 +375,30 @@ void input_manager::pump_input(nk_context *context)
         }
     }
 
-    //MouseState mouseState;
-    //memset(&mouseState, 0, sizeof(mouseState));
-    //if (try_get_mouse_state(-1, &mouseState))
-    //{
-    //    nk_input_motion(context, mouseState.x, mouseState.y);
-    //    nk_input_button(context, NK_BUTTON_LEFT, mouseState.x, mouseState.y, mouseState.buttons[MOUSE_LEFT_BUTTON]);
-    //    nk_input_button(context, NK_BUTTON_MIDDLE, mouseState.x, mouseState.y, mouseState.buttons[MOUSE_MIDDLE_BUTTON]);
-    //    nk_input_button(context, NK_BUTTON_RIGHT, mouseState.x, mouseState.y, mouseState.buttons[MOUSE_RIGHT_BUTTON]);
-    //}
+    nk_input_motion(context, (int)mMousePosition.x, (int)mMousePosition.y);
+
+    MouseState mouseState;
+    memset(&mouseState, 0, sizeof(mouseState));
+    if (try_get_mouse_state(-1, &mouseState))
+    {
+        nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_LEFT_BUTTON]);
+        nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_MIDDLE_BUTTON]);
+        nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, mouseState.buttons[MOUSE_RIGHT_BUTTON]);
+    }
 
     ControllerState controllerState;
     memset(&controllerState, 0, sizeof(controllerState));
     if (try_get_controller_state(-1, &controllerState))
     {
-        nk_input_motion(context, controllerState.thumb_left_x, controllerState.thumb_left_y);
-        nk_input_button(context, NK_BUTTON_LEFT, controllerState.thumb_left_x, controllerState.thumb_left_y, controllerState.buttons[CONTROLLER_A_BUTTON]);
-        nk_input_button(context, NK_BUTTON_MIDDLE, controllerState.thumb_left_x, controllerState.thumb_left_y, controllerState.buttons[CONTROLLER_X_BUTTON]);
-        nk_input_button(context, NK_BUTTON_RIGHT, controllerState.thumb_left_x, controllerState.thumb_left_y, controllerState.buttons[CONTROLLER_B_BUTTON]);
+        nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_A_BUTTON]);
+        nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_X_BUTTON]);
+        nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, controllerState.buttons[CONTROLLER_B_BUTTON]);
     }
 
     nk_input_end(context);
+}
+
+MousePosition input_manager::get_mouse_position()
+{
+    return mMousePosition;
 }

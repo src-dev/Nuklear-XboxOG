@@ -11,22 +11,18 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #include "nuklear.h"
 
+typedef struct MousePosition
+{
+  float x;
+  float y;
+} MousePosition;
+
 typedef struct ControllerState
 {
-    int thumb_left_x;
-    int thumb_left_y;
-    int thumb_left_dx;
-    int thumb_left_dy;
-    int thumb_right_x;
-    int thumb_right_y;
-    int thumb_right_dx;
-    int thumb_right_dy;
-
-    float velocity_left_x;
-    float velocity_left_y;
-    float velocity_right_x;
-    float velocity_right_y;
-
+    float thumb_left_dx;
+    float thumb_left_dy;
+    float thumb_right_dx;
+    float thumb_right_dy;
     bool buttons[16];
 } ControllerState;
 
@@ -52,11 +48,9 @@ typedef enum CONTROLLER_BUTTON
 
 typedef struct MouseState
 {
-  int x;
-  int y;
-  int dx;
-  int dy;
-  int dz;
+  float dx;
+  float dy;
+  float dz;
   bool buttons[5]; 
 } MouseState;
 
@@ -102,4 +96,5 @@ public:
     static bool has_mouse(int port);
     static bool try_get_keyboard_state(int port, KeyboardState* keyboardState);
     static void pump_input(nk_context *context);
+    static MousePosition get_mouse_position();
 };

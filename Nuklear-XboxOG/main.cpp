@@ -24,12 +24,7 @@ void __cdecl main()
         overview::render();
 
         renderer::render(0xff333333);
-
-        if (input_manager::has_mouse(-1) || input_manager::has_controller(-1))
-        {
-            renderer::mouse_pointer();
-        }
-
+        renderer::mouse_pointer();
         renderer::present();
     }
 }

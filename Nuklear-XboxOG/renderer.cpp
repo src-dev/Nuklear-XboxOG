@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "graphics.h"
+#include "input_manager.h"
 #include "debug.h"
 
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -10,6 +11,8 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
+
+#define MAX_INDICES_PER_BATCH 32766
 
 typedef struct nk_vertex 
 {
@@ -114,9 +117,7 @@ void renderer::render(uint32_t background_color)
         }
 
         //graphics::getDevice()->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertex_count, command->elem_count/3, offset, D3DFMT_INDEX16, nk_buffer_memory_const(&vertex_buffer), sizeof(nk_vertex));
-                
-        const int MAX_INDICES_PER_BATCH = 32766; 
-        
+
         int remaining = command->elem_count;
         int indexOffset = 0;
         while (remaining > 0) 
@@ -160,21 +161,18 @@ nk_font* renderer::get_font()
 
 void renderer::mouse_pointer()
 {
-         struct nk_vec2 pos = _context.input.mouse.pos;
-    struct VERTEX
+    if (!input_manager::has_mouse(-1) && !input_manager::has_controller(-1))
     {
-        float x, y, z;
-        DWORD color;
-        float u, v;
-    };
-    VERTEX quad[4] =
+        return;
+    }
+    struct nk_vec2 pos = _context.input.mouse.pos;
+    nk_vertex quad[4] =
     {
-        { pos.x,      pos.y,      0.0f, 0xffffffff, 0.0f, 0.0f },
-        { pos.x + 8,  pos.y,      0.0f, 0xffffffff, 1.0f, 0.0f },
-        { pos.x,      pos.y + 8,  0.0f, 0xffffffff, 0.0f, 1.0f },
-        { pos.x + 8,  pos.y + 8,  0.0f, 0xffffffff, 1.0f, 1.0f }
+        { pos.x, pos.y, 0.0f, 0xff, 0xff, 0xff, 0xff, 0.0f, 0.0f },
+        { pos.x + 8, pos.y, 0.0f, 0xff, 0xff, 0xff, 0xff, 1.0f, 0.0f },
+        { pos.x, pos.y + 8, 0.0f, 0xff, 0xff, 0xff, 0xff, 0.0f, 1.0f },
+        { pos.x + 8, pos.y + 8, 0.0f, 0xff, 0xff, 0xff, 0xff, 1.0f, 1.0f }
     };
-
     graphics::getDevice()->SetTexture(0, _mouse_texture);
-    graphics::getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(VERTEX));
+    graphics::getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(nk_vertex));
 }
