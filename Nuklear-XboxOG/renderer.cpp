@@ -14,13 +14,6 @@
 
 #define MAX_INDICES_PER_BATCH 16383
 
-typedef struct nk_vertex 
-{
-    float position[3];
-    nk_byte col[4];
-    float uv[2];
-} nk_vertex;
-
 nk_buffer _commands;
 nk_context _context;
 nk_font* _font;

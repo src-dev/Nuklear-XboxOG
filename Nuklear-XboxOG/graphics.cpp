@@ -1,5 +1,4 @@
-#include "StdAfx.h"
-#include ".\graphics.h"
+#include "graphics.h"
 #include "stdint.h"
 
 static int mWidth;

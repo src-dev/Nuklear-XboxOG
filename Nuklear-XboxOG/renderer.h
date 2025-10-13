@@ -11,6 +11,13 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #include "nuklear.h"
 
+typedef struct nk_vertex 
+{
+    float position[3];
+    nk_byte col[4];
+    float uv[2];
+} nk_vertex;
+
 class renderer
 {
 public:
