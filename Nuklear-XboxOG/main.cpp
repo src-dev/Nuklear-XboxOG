@@ -7,6 +7,7 @@
 #include "Demos\canvas.h"
 #include "Demos\calculator.h"
 #include "Demos\overview.h"
+#include "Demos\focus.h"
 
 void __cdecl main()
 {
@@ -24,6 +25,7 @@ void __cdecl main()
         controls::render();
         calculator::render();
         overview::render();
+        focus::render();
 
         renderer::begin_render(0xff333333);
         sphere::render();
