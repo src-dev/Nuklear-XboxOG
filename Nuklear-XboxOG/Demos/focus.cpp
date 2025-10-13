@@ -87,7 +87,8 @@ static void fm_pop_focus_style(struct nk_context *ctx, nk_bool focused)
 
 static void fm_push_checkbox_focus_style(struct nk_context *ctx, nk_bool focused)
 {
-    if (focused) {
+    if (focused) 
+    {
         struct nk_style_toggle *s = &ctx->style.checkbox;
         nk_style_push_color(ctx, &s->normal.data.color, nk_rgb(255, 255, 0)); 
         nk_style_push_color(ctx, &s->hover.data.color, nk_rgb(255, 255, 0));
@@ -97,7 +98,8 @@ static void fm_push_checkbox_focus_style(struct nk_context *ctx, nk_bool focused
 
 static void fm_pop_checkbox_focus_style(struct nk_context *ctx, nk_bool focused)
 {
-    if (focused) {
+    if (focused) 
+    {
         nk_style_pop_color(ctx); 
         nk_style_pop_color(ctx); 
         nk_style_pop_color(ctx); 
@@ -156,11 +158,13 @@ void focus::render()
 
         fm_end();
 
-        if (button1_pressed) {
+        if (button1_pressed) 
+        {
             nk_label(ctx, "Button 1 pressed!", NK_TEXT_LEFT);
             button1_pressed = 0;
         }
-        if (button2_pressed) {
+        if (button2_pressed) 
+        {
             nk_label(ctx, "Button 2 pressed!", NK_TEXT_LEFT);
             button2_pressed = 0;
         }

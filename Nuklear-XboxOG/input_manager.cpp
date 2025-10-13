@@ -63,15 +63,18 @@ typedef struct _XINPUT_STATEEX
   BYTE firstEvent; 
 } XINPUT_STATEEX;
 
+#define UPDATE_ANALOG_HYSTERESIS(value, held) ((held) ? ((value) >= 24) : ((value) >= 48))
+
 namespace
 {
 	bool mInitialized = false;
 
-    float velocity_x;
-    float velocity_y;
     MousePosition mMousePosition;
 
+    DWORD mControllerTick;
 	HANDLE mControllerHandles[XGetPortCount()];
+    float mControllerFiilterX[XGetPortCount()];
+    float mControllerFiilterY[XGetPortCount()];
     DWORD mControllerLastPacketNumber[XGetPortCount()];
     ControllerState mControllerStatesCurrent[XGetPortCount()];
     ControllerState mControllerStatesPrevious[XGetPortCount()];
@@ -94,11 +97,12 @@ void input_manager::init()
 {
     XInitDevices(0, 0);
 
-    velocity_x = 0;
-    velocity_y = 0;
     memset(&mMousePosition, 0, sizeof(mMousePosition));
 
+    mControllerTick = 0;
     memset(mControllerHandles, 0, sizeof(mControllerHandles));
+    memset(&mControllerFiilterX, 0, sizeof(mControllerFiilterX));
+    memset(&mControllerFiilterY, 0, sizeof(mControllerFiilterY));
     memset(mControllerLastPacketNumber, 0, sizeof(mControllerLastPacketNumber));
     memset(mControllerStatesCurrent, 0, sizeof(mControllerStatesCurrent));
     memset(mControllerStatesPrevious, 0, sizeof(mControllerStatesPrevious));
@@ -146,6 +150,18 @@ void input_manager::process_controller()
 		}
 	}
 
+    DWORD now = GetTickCount();
+    if (mControllerTick == 0)
+    {
+        mControllerTick = now;
+    }
+    float dt = (now - mControllerTick) / 1000.0f;
+    if (dt <= 0.0f)
+    {
+        dt = 1.0f / 60.0f;
+    }
+    mControllerTick = now;
+
     for (int i = 0; i < XGetPortCount(); i++)
 	{
         XINPUT_STATE controllerInputState;
@@ -157,14 +173,14 @@ void input_manager::process_controller()
         if (mControllerLastPacketNumber[i] != controllerInputState.dwPacketNumber)
         {
             memcpy(&mControllerStatesPrevious[i], &mControllerStatesCurrent[i], sizeof(ControllerState));
-            mControllerStatesCurrent[i].buttons[CONTROLLER_A_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_A] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_B_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_B] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_X_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_X] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_Y_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_Y] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_BLACK_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_BLACK] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_WHITE_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_WHITE] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_LTRIGGER_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_LEFT_TRIGGER] > 32;
-            mControllerStatesCurrent[i].buttons[CONTROLLER_RTRIGGER_BUTTON] = controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_RIGHT_TRIGGER] > 32;
+            mControllerStatesCurrent[i].buttons[CONTROLLER_A_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_A], mControllerStatesPrevious[i].buttons[CONTROLLER_B_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_B_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_B], mControllerStatesPrevious[i].buttons[CONTROLLER_B_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_X_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_X], mControllerStatesPrevious[i].buttons[CONTROLLER_X_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_Y_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_Y], mControllerStatesPrevious[i].buttons[CONTROLLER_Y_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_BLACK_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_BLACK], mControllerStatesPrevious[i].buttons[CONTROLLER_BLACK_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_WHITE_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_WHITE], mControllerStatesPrevious[i].buttons[CONTROLLER_WHITE_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_LTRIGGER_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_LEFT_TRIGGER], mControllerStatesPrevious[i].buttons[CONTROLLER_LTRIGGER_BUTTON]);
+            mControllerStatesCurrent[i].buttons[CONTROLLER_RTRIGGER_BUTTON] = UPDATE_ANALOG_HYSTERESIS(controllerInputState.Gamepad.bAnalogButtons[XINPUT_GAMEPAD_RIGHT_TRIGGER], mControllerStatesPrevious[i].buttons[CONTROLLER_RTRIGGER_BUTTON]);
             mControllerStatesCurrent[i].buttons[CONTROLLER_DPAD_UP_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0;
             mControllerStatesCurrent[i].buttons[CONTROLLER_DPAD_DOWN_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0;
             mControllerStatesCurrent[i].buttons[CONTROLLER_DPAD_LEFT_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
@@ -173,26 +189,35 @@ void input_manager::process_controller()
             mControllerStatesCurrent[i].buttons[CONTROLLER_BACK_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) != 0;
             mControllerStatesCurrent[i].buttons[CONTROLLER_LTHUMB_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != 0;
             mControllerStatesCurrent[i].buttons[CONTROLLER_RTHUMB_BUTTON] = (controllerInputState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0;
-            
-            const float sensitivity = 10.0f;
-            const float acceleration = 1.6f;
-            const float friction = 0.85f;
-            const float maxSpeed = 15.0f;
-            const float deadzone = 0.25f;
-
-            float lx = controllerInputState.Gamepad.sThumbLX / 32768.0f;
-            float ly = -(controllerInputState.Gamepad.sThumbLY / 32768.0f);
-            lx = fabsf(lx) < deadzone ? 0 : (lx - math::copy_sign(deadzone, lx)) / (1.0f - deadzone);
-            ly = fabsf(ly) < deadzone ? 0 : (ly - math::copy_sign(deadzone, ly)) / (1.0f - deadzone);
-            velocity_x = math::clamp_float((velocity_x + lx * acceleration) * friction, -maxSpeed, maxSpeed);
-            velocity_y = math::clamp_float((velocity_y + ly * acceleration) * friction, -maxSpeed, maxSpeed);
-            mControllerStatesCurrent[i].thumb_left_dx = lx * sensitivity;
-            mControllerStatesCurrent[i].thumb_left_dy = ly * sensitivity;
-
-            mMousePosition.x = math::clamp_float(mMousePosition.x + mControllerStatesCurrent[i].thumb_left_dx, 0, (float)graphics::getWidth());
-            mMousePosition.y = math::clamp_float(mMousePosition.y + mControllerStatesCurrent[i].thumb_left_dy, 0, (float)graphics::getHeight());
-            mControllerLastPacketNumber[i] = controllerInputState.dwPacketNumber;
         }
+
+        const float raw_lx =  controllerInputState.Gamepad.sThumbLX / 32768.0f;
+        const float raw_ly = -controllerInputState.Gamepad.sThumbLY / 32768.0f;
+
+        const float deadzone = 0.25f;
+        float lx = (fabsf(raw_lx) < deadzone) ? 0.0f : (raw_lx - math::copy_sign(deadzone, raw_lx)) / (1.0f - deadzone);
+        float ly = (fabsf(raw_ly) < deadzone) ? 0.0f : (raw_ly - math::copy_sign(deadzone, raw_ly)) / (1.0f - deadzone);
+
+        const float filter_alpha = 0.35f;
+        mControllerFiilterX[i] = mControllerFiilterX[i] + filter_alpha * (lx - mControllerFiilterX[i]);
+        mControllerFiilterY[i] = mControllerFiilterY[i] + filter_alpha * (ly - mControllerFiilterY[i]);
+
+        const bool button_a_held = mControllerStatesCurrent[i].buttons[CONTROLLER_A_BUTTON];
+        const bool left_trigger_held = mControllerStatesCurrent[i].buttons[CONTROLLER_LTRIGGER_BUTTON];
+        const float base_speed = 600.0f; 
+        const float boost = button_a_held ? 1.25f : 1.0f;
+        const float precision = left_trigger_held ? 0.35f : 1.0f;
+
+        const float dx = mControllerFiilterX[i] * base_speed * boost * precision * dt;
+        const float dy = mControllerFiilterY[i] * base_speed * boost * precision * dt;
+
+        mMousePosition.x = math::clamp_float(mMousePosition.x + dx, 0.0f, (float)graphics::getWidth());
+        mMousePosition.y = math::clamp_float(mMousePosition.y + dy, 0.0f, (float)graphics::getHeight());
+
+        mControllerStatesCurrent[i].thumb_left_dx = dx;
+        mControllerStatesCurrent[i].thumb_left_dy = dy;
+
+        mControllerLastPacketNumber[i] = controllerInputState.dwPacketNumber;
     }
 }
 
@@ -596,11 +621,11 @@ void input_manager::pump_input(nk_context *context)
         right_pressed |= controllerState.buttons[CONTROLLER_B_BUTTON];
     }
 
-    nk_input_motion(context, (int)mMousePosition.x, (int)mMousePosition.y);
     nk_input_button(context, NK_BUTTON_LEFT, (int)mMousePosition.x, (int)mMousePosition.y, left_pressed);
     nk_input_button(context, NK_BUTTON_MIDDLE, (int)mMousePosition.x, (int)mMousePosition.y, middle_pressed);
     nk_input_button(context, NK_BUTTON_RIGHT, (int)mMousePosition.x, (int)mMousePosition.y, right_pressed);
- 
+    nk_input_motion(context, (int)mMousePosition.x, (int)mMousePosition.y);
+
     nk_input_end(context);
 }
 
