@@ -1,11 +1,12 @@
 #include "graphics.h"
 #include "stdint.h"
+#include "stdio.h"
 
 static int mWidth;
 static int mHeight;
 static LPDIRECT3DDEVICE8 mD3dDevice;
 
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
 DISPLAY_MODE displayModes[] =
 {
@@ -16,19 +17,17 @@ DISPLAY_MODE displayModes[] =
     {   720,    480,    FALSE,  TRUE,  60 },         // 720x480 interlaced 16x9
     {   720,    480,    FALSE,  FALSE, 60 },         // 720x480 interlaced 4x3
 
-	// Width  Height Progressive Widescreen
-
-	// HDTV Progressive Modes
+    // HDTV Progressive Modes
     {  1280,    720,    TRUE,   TRUE,  60 },         // 1280x720 progressive 16x9
 
-	// EDTV Progressive Modes
+    // EDTV Progressive Modes
     {   720,    480,    TRUE,   TRUE,  60 },         // 720x480 progressive 16x9
     {   640,    480,    TRUE,   TRUE,  60 },         // 640x480 progressive 16x9
     {   720,    480,    TRUE,   FALSE, 60 },         // 720x480 progressive 4x3
     {   640,    480,    TRUE,   FALSE, 60 },         // 640x480 progressive 4x3
 
-	// HDTV Interlaced Modes
-	{  1920,   1080,    FALSE,  TRUE,  60 },         // 1920x1080 interlaced 16x9
+    // HDTV Interlaced Modes
+    {  1920,   1080,    FALSE,  TRUE,  60 },         // 1920x1080 interlaced 16x9
 
 	// SDTV PAL-50 Interlaced Modes
     {   720,    480,    FALSE,  TRUE,  50 },         // 720x480 interlaced 16x9 50Hz
@@ -76,48 +75,98 @@ bool graphics::supportsMode(DISPLAY_MODE mode, DWORD dwVideoStandard, DWORD dwVi
 
 bool graphics::createDevice()
 {
-	uint32_t videoFlags = XGetVideoFlags();
-	uint32_t videoStandard = XGetVideoStandard();
-	uint32_t currentMode;
-    for (currentMode = 0; currentMode < NUM_MODES-1; currentMode++)
+    uint32_t videoFlags    = XGetVideoFlags();
+    uint32_t videoStandard = XGetVideoStandard();
+
+    /* Choose best supported mode: prefer progressive, then width, then height */
+    int bestMode = -1;
+    for (uint32_t i = 0; i < NUM_MODES; ++i)
     {
-		if (supportsMode(displayModes[currentMode], videoStandard, videoFlags)) 
-		{
-			break;
-		}
-    } 
+        if (!supportsMode(displayModes[i], videoStandard, videoFlags))
+        {
+            continue;
+        }
 
-	LPDIRECT3D8 d3d = Direct3DCreate8(D3D_SDK_VERSION);
-    if(d3d == NULL)
-	{
+        if (bestMode == -1)
+        {
+            bestMode = (int)i;
+            continue;
+        }
+
+        const DISPLAY_MODE &cand = displayModes[i];
+        const DISPLAY_MODE &best = displayModes[bestMode];
+
+        if (cand.fProgressive && !best.fProgressive)
+        {
+            bestMode = (int)i;
+        }
+        else if (cand.dwWidth  > best.dwWidth)
+        {
+            bestMode = (int)i;
+        }
+        else if (cand.dwWidth  == best.dwWidth && cand.dwHeight > best.dwHeight) 
+        {
+            bestMode = (int)i;
+        }
+    }
+
+    if (bestMode == -1) 
+    {
+        bestMode = 0;
+    }
+    uint32_t currentMode = (uint32_t)bestMode;
+
+    LPDIRECT3D8 d3d = Direct3DCreate8(D3D_SDK_VERSION);
+    if (d3d == NULL)
+    {
         return false;
-	}
+    }
 
-	D3DPRESENT_PARAMETERS params; 
+    D3DPRESENT_PARAMETERS params;
     ZeroMemory(&params, sizeof(params));
-	params.BackBufferWidth = displayModes[currentMode].dwWidth;
+    params.BackBufferWidth = displayModes[currentMode].dwWidth;
     params.BackBufferHeight = displayModes[currentMode].dwHeight;
-	params.Flags = displayModes[currentMode].fProgressive ? D3DPRESENTFLAG_PROGRESSIVE : D3DPRESENTFLAG_INTERLACED;
+    params.Flags = displayModes[currentMode].fProgressive ? D3DPRESENTFLAG_PROGRESSIVE : D3DPRESENTFLAG_INTERLACED;
     params.Flags |= displayModes[currentMode].fWideScreen ? D3DPRESENTFLAG_WIDESCREEN : 0;
     params.FullScreen_RefreshRateInHz = displayModes[currentMode].dwFreq;
-	params.BackBufferFormat = D3DFMT_X8R8G8B8;
-    params.BackBufferCount = 1;
+    params.BackBufferFormat = D3DFMT_X8R8G8B8;
+    params.BackBufferCount  = 1;
     params.EnableAutoDepthStencil = TRUE;
     params.AutoDepthStencilFormat = D3DFMT_D24S8;
-	params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    params.SwapEffect = D3DSWAPEFFECT_DISCARD;
     params.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
 
-    mWidth = displayModes[currentMode].dwWidth;
-    mHeight = displayModes[currentMode].dwHeight;
+    mWidth = (int)displayModes[currentMode].dwWidth;
+    mHeight = (int)displayModes[currentMode].dwHeight;
 
-	LPDIRECT3DDEVICE8 d3dDevice;
+    LPDIRECT3DDEVICE8 d3dDevice = NULL;
     if (FAILED(d3d->CreateDevice(0, D3DDEVTYPE_HAL, NULL, D3DCREATE_HARDWARE_VERTEXPROCESSING, &params, &d3dDevice)))
-	{
+    {
+        d3d->Release();
         return false;
 	}
-    mD3dDevice = d3dDevice;
 
-    mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
+    mD3dDevice = d3dDevice;
+    d3d->Release();
+
+    // Initial clear to avoid showing uninitialized backbuffer
+    mD3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0x00000000, 1.0f, 0);
+
+#ifdef _DEBUG
+    {
+        char buf[160];
+        const DISPLAY_MODE &sel = displayModes[currentMode];
+        sprintf(buf, "Selected video mode: %dx%d %s %s %dHz\n",
+            sel.dwWidth, sel.dwHeight,
+            sel.fProgressive ? "Progressive" : "Interlaced",
+            sel.fWideScreen ? "Widescreen" : "4:3",
+            sel.dwFreq);
+        OutputDebugString(buf);
+    }
+#endif
+
+    // Default FVF for our 2D/3D paths (Nuklear verts use XYZ+DIFFUSE+TEX1)
+    mD3dDevice->SetVertexShader(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 
     /* blend state */
     mD3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
@@ -169,7 +218,7 @@ void graphics::begin_stencil(float x, float y, float w, float h)
     mD3dDevice->Clear(0L, NULL, D3DCLEAR_STENCIL, 0, 1.0f, 0L);
     mD3dDevice->SetVertexShader(D3DFVF_XYZRHW);
     mD3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(stencil_vertex));
-    mD3dDevice->SetVertexShader(D3DFVF_XYZ + D3DFVF_DIFFUSE + D3DFVF_TEX1);
+    mD3dDevice->SetVertexShader(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 
     mD3dDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
     mD3dDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
@@ -234,7 +283,7 @@ D3DTexture* graphics::createImage(uint8_t* imageData, D3DFORMAT format, int widt
 	D3DTexture *texture;
 	if (FAILED(D3DXCreateTexture(mD3dDevice, width, height, 1, 0, format, D3DPOOL_DEFAULT, &texture)))
 	{
-		return false;
+		return NULL;
 	}
 
 	D3DSURFACE_DESC surfaceDesc;
