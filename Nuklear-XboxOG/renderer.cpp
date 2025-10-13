@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "input_manager.h"
 #include "debug.h"
+#include "futura_thin_ttf.h"
 
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
@@ -30,7 +31,9 @@ bool renderer::init()
     nk_font_atlas atlas;
     nk_font_atlas_init_default(&atlas);
     nk_font_atlas_begin(&atlas);
-    _font = nk_font_atlas_add_default(&atlas, 13, 0);
+
+    //_font = nk_font_atlas_add_default(&atlas, 13, 0);
+    _font = nk_font_atlas_add_from_memory(&atlas, (void*)future_thin_ttf, sizeof(future_thin_ttf), 12, 0);
 
     int image_width;
     int image_height;

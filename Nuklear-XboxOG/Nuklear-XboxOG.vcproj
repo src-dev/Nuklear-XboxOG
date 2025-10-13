@@ -273,6 +273,9 @@
 				RelativePath=".\debug.h">
 			</File>
 			<File
+				RelativePath=".\futura_thin_ttf.h">
+			</File>
+			<File
 				RelativePath=".\graphics.cpp">
 			</File>
 			<File
