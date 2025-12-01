@@ -1,30 +1,25 @@
-Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nuklear-XboxOG", "Nuklear-XboxOG\Nuklear-XboxOG.vcproj", "{5837B221-F405-4877-88B8-E6A5A594E59E}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Nuklear-XboxOG", "Nuklear-XboxOG\Nuklear-XboxOG.vcxproj", "{86D2EA86-579C-4BD0-B7B0-9D21DE001906}"
 EndProject
 Global
-	GlobalSection(SolutionConfiguration) = preSolution
-		Debug = Debug
-		Profile = Profile
-		Profile_FastCap = Profile_FastCap
-		Release = Release
-		Release_LTCG = Release_LTCG
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
-	GlobalSection(ProjectConfiguration) = postSolution
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Debug.ActiveCfg = Debug|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Debug.Build.0 = Debug|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Profile.ActiveCfg = Profile|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Profile.Build.0 = Profile|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Profile_FastCap.ActiveCfg = Profile_FastCap|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Profile_FastCap.Build.0 = Profile_FastCap|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Release.ActiveCfg = Release|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Release.Build.0 = Release|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Release_LTCG.ActiveCfg = Release_LTCG|Xbox
-		{5837B221-F405-4877-88B8-E6A5A594E59E}.Release_LTCG.Build.0 = Release_LTCG|Xbox
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86D2EA86-579C-4BD0-B7B0-9D21DE001906}.Debug|x86.ActiveCfg = Debug|Win32
+		{86D2EA86-579C-4BD0-B7B0-9D21DE001906}.Debug|x86.Build.0 = Debug|Win32
+		{86D2EA86-579C-4BD0-B7B0-9D21DE001906}.Release|x86.ActiveCfg = Release|Win32
+		{86D2EA86-579C-4BD0-B7B0-9D21DE001906}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-	EndGlobalSection
-	GlobalSection(ExtensibilityAddIns) = postSolution
+		SolutionGuid = {5B9746BD-0D27-4D2A-A07C-4CC605F88E27}
 	EndGlobalSection
 EndGlobal

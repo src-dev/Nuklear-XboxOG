@@ -161,7 +161,7 @@ bool graphics::createDevice()
             sel.fProgressive ? "Progressive" : "Interlaced",
             sel.fWideScreen ? "Widescreen" : "4:3",
             sel.dwFreq);
-        OutputDebugString(buf);
+        OutputDebugStringA(buf);
     }
 #endif
 
