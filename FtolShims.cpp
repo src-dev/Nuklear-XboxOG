@@ -32,4 +32,9 @@ extern "C" {
     {
         return (long)x;
     }
+
+    long __cdecl _ftol3(double x)
+    {
+        return (long)x;
+    }
 }
